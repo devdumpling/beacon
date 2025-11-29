@@ -5,14 +5,19 @@ import gleam/otp/actor
 import gleam/result
 import mist
 
+/// Connection with unique ID for proper lifecycle management
+pub type Connection {
+  Connection(id: String, conn: mist.WebsocketConnection)
+}
+
 pub type Message {
-  Register(project_id: String, conn: mist.WebsocketConnection)
-  Unregister(project_id: String, conn: mist.WebsocketConnection)
+  Register(project_id: String, conn_id: String, conn: mist.WebsocketConnection)
+  Unregister(project_id: String, conn_id: String)
   Broadcast(project_id: String, payload: String)
 }
 
 pub type State {
-  State(connections: Dict(String, List(mist.WebsocketConnection)))
+  State(connections: Dict(String, List(Connection)))
 }
 
 /// Start the connections service actor
@@ -22,12 +27,12 @@ pub fn start() -> Result(actor.Started(Subject(Message)), actor.StartError) {
   |> actor.start
 }
 
-pub fn register(subject: Subject(Message), project_id: String, conn: mist.WebsocketConnection) -> Nil {
-  process.send(subject, Register(project_id, conn))
+pub fn register(subject: Subject(Message), project_id: String, conn_id: String, conn: mist.WebsocketConnection) -> Nil {
+  process.send(subject, Register(project_id, conn_id, conn))
 }
 
-pub fn unregister(subject: Subject(Message), project_id: String, conn: mist.WebsocketConnection) -> Nil {
-  process.send(subject, Unregister(project_id, conn))
+pub fn unregister(subject: Subject(Message), project_id: String, conn_id: String) -> Nil {
+  process.send(subject, Unregister(project_id, conn_id))
 }
 
 pub fn broadcast(subject: Subject(Message), project_id: String, payload: String) -> Nil {
@@ -36,21 +41,21 @@ pub fn broadcast(subject: Subject(Message), project_id: String, payload: String)
 
 fn handle(state: State, msg: Message) -> actor.Next(State, Message) {
   case msg {
-    Register(project_id, conn) -> {
+    Register(project_id, conn_id, conn) -> {
       let current =
         dict.get(state.connections, project_id)
         |> result.unwrap([])
-      let updated = [conn, ..current]
+      let updated = [Connection(id: conn_id, conn: conn), ..current]
       let new_conns = dict.insert(state.connections, project_id, updated)
       actor.continue(State(connections: new_conns))
     }
 
-    Unregister(project_id, conn) -> {
+    Unregister(project_id, conn_id) -> {
       let current =
         dict.get(state.connections, project_id)
         |> result.unwrap([])
-      // Note: WebsocketConnection equality may need custom handling
-      let updated = list.filter(current, fn(c) { c != conn })
+      // Filter by connection ID (string equality is reliable)
+      let updated = list.filter(current, fn(c) { c.id != conn_id })
       let new_conns = dict.insert(state.connections, project_id, updated)
       actor.continue(State(connections: new_conns))
     }
@@ -60,13 +65,17 @@ fn handle(state: State, msg: Message) -> actor.Next(State, Message) {
         dict.get(state.connections, project_id)
         |> result.unwrap([])
 
-      // Send to each connected WebSocket
-      list.each(conns, fn(conn) {
-        let _ = mist.send_text_frame(conn, payload)
-        Nil
+      // Send to each connected WebSocket, filtering out dead connections
+      let live_conns = list.filter(conns, fn(c) {
+        case mist.send_text_frame(c.conn, payload) {
+          Ok(_) -> True
+          Error(_) -> False
+        }
       })
 
-      actor.continue(state)
+      // Update state with only live connections
+      let new_conns = dict.insert(state.connections, project_id, live_conns)
+      actor.continue(State(connections: new_conns))
     }
   }
 }

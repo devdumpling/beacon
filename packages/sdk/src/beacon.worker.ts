@@ -6,11 +6,13 @@ interface Config {
 interface QueuedMessage {
   type: string;
   event?: string;
-  props?: Record<string, unknown>;
+  props?: string; // JSON-stringified props for API
   ts?: number;
   userId?: string;
-  traits?: Record<string, unknown>;
+  traits?: string; // JSON-stringified traits for API
 }
+
+type ConnectionState = "connecting" | "connected" | "disconnected" | "reconnecting";
 
 let ws: WebSocket | null = null;
 let config: Config | null = null;
@@ -20,6 +22,8 @@ let userId: string | null = null;
 let queue: QueuedMessage[] = [];
 let reconnectDelay = 1000;
 let reconnectTimer: number | null = null;
+let connectionState: ConnectionState = "disconnected";
+let hasEverConnected = false;
 
 const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 min
 let lastActivity = Date.now();
@@ -28,8 +32,15 @@ function uuid(): string {
   return crypto.randomUUID();
 }
 
+function setConnectionState(state: ConnectionState) {
+  connectionState = state;
+  self.postMessage({ type: "connection", state });
+}
+
 function connect() {
   if (!config) return;
+
+  setConnectionState(hasEverConnected ? "reconnecting" : "connecting");
 
   const wsUrl = config.url.replace(/^http/, "ws");
   const params = new URLSearchParams({
@@ -42,6 +53,8 @@ function connect() {
 
   ws.onopen = () => {
     reconnectDelay = 1000;
+    hasEverConnected = true;
+    setConnectionState("connected");
     self.postMessage("ready");
     flush();
   };
@@ -52,16 +65,29 @@ function connect() {
       if (msg.type === "flags") {
         self.postMessage({ type: "flags", flags: msg.flags });
       }
-    } catch {
-      // ignore parse errors
+    } catch (err) {
+      // Log parse errors in debug mode
+      if (process.env.NODE_ENV === "development") {
+        console.warn("[beacon] Failed to parse message:", e.data, err);
+      }
     }
   };
 
   ws.onclose = () => {
+    setConnectionState("disconnected");
     scheduleReconnect();
   };
 
-  ws.onerror = () => {
+  ws.onerror = (err) => {
+    // On first connection failure, still signal "ready" so main thread doesn't wait forever
+    // Events will queue and send when connection succeeds
+    if (!hasEverConnected) {
+      self.postMessage("ready");
+      self.postMessage({
+        type: "error",
+        error: "Connection failed, will retry",
+      });
+    }
     ws?.close();
   };
 }
@@ -116,7 +142,8 @@ self.onmessage = (e) => {
     send({
       type: "identify",
       userId: e.data.userId,
-      traits: e.data.traits,
+      // API expects traits as a JSON string
+      traits: JSON.stringify(e.data.traits || {}),
     });
     return;
   }
@@ -125,7 +152,8 @@ self.onmessage = (e) => {
     send({
       type: "event",
       event: e.data.event,
-      props: e.data.props,
+      // API expects props as a JSON string
+      props: JSON.stringify(e.data.props || {}),
       ts: e.data.ts,
     });
   }

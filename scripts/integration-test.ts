@@ -158,19 +158,19 @@ async function websocketTests() {
     ws.close();
   });
 
-  await test("Send event message", async () => {
+  await test("Send event message with JSON string props", async () => {
     const ws = await connectWs({
       project: TEST_PROJECT_ID,
       session: crypto.randomUUID(),
       anon: TEST_ANON_ID,
     });
 
-    // Send an event - server doesn't respond, but shouldn't error
+    // API expects props as JSON string (this is what the SDK now sends)
     ws.send(
       JSON.stringify({
         type: "event",
         event: "test_event",
-        props: JSON.stringify({ foo: "bar" }), // Note: props as JSON string
+        props: JSON.stringify({ foo: "bar", num: 42 }),
         ts: Date.now(),
       })
     );
@@ -180,18 +180,19 @@ async function websocketTests() {
     ws.close();
   });
 
-  await test("Send identify message", async () => {
+  await test("Send identify message with JSON string traits", async () => {
     const ws = await connectWs({
       project: TEST_PROJECT_ID,
       session: crypto.randomUUID(),
       anon: TEST_ANON_ID,
     });
 
+    // API expects traits as JSON string (this is what the SDK now sends)
     ws.send(
       JSON.stringify({
         type: "identify",
         userId: "user-123",
-        traits: JSON.stringify({ name: "Test User" }), // Note: traits as JSON string
+        traits: JSON.stringify({ name: "Test User", plan: "pro" }),
       })
     );
 

@@ -1,3 +1,5 @@
+import gleam/bit_array
+import gleam/crypto
 import gleam/dynamic/decode
 import gleam/erlang/process.{type Subject}
 import gleam/json
@@ -14,6 +16,7 @@ pub type State {
     session_id: String,
     anon_id: String,
     user_id: Option(String),
+    conn_id: String,
     events_subject: Subject(events.Message),
     flags_subject: Subject(flags.Message),
     conns_subject: Subject(connections.Message),
@@ -40,14 +43,18 @@ pub fn init(
   services: Services,
   conn: WebsocketConnection,
 ) -> #(State, Option(process.Selector(WsMessage))) {
+  // Generate unique connection ID for proper lifecycle management
+  let conn_id = uuid()
+
   // Register connection for flag broadcasts
-  connections.register(services.conns, project_id, conn)
+  connections.register(services.conns, project_id, conn_id, conn)
 
   let state = State(
     project_id: project_id,
     session_id: session_id,
     anon_id: anon_id,
     user_id: None,
+    conn_id: conn_id,
     events_subject: services.events,
     flags_subject: services.flags,
     conns_subject: services.conns,
@@ -56,9 +63,9 @@ pub fn init(
   #(state, None)
 }
 
-pub fn close(_state: State) -> Nil {
-  // Note: We don't have access to conn in on_close
-  // The connection is managed by mist internally
+pub fn close(state: State) -> Nil {
+  // Unregister connection using its unique ID
+  connections.unregister(state.conns_subject, state.project_id, state.conn_id)
   Nil
 }
 
@@ -157,4 +164,10 @@ fn parse_identify(text: String) -> Result(ParsedMessage, Nil) {
     Ok(msg) -> Ok(msg)
     Error(_) -> Error(Nil)
   }
+}
+
+/// Generate a unique connection ID using random bytes
+fn uuid() -> String {
+  crypto.strong_random_bytes(16)
+  |> bit_array.base16_encode
 }
