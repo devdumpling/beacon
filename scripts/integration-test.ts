@@ -340,40 +340,268 @@ async function websocketTests() {
 }
 
 // ─────────────────────────────────────────────────────────────
-// Database Verification (via HTTP API)
+// Session Management Tests
 // ─────────────────────────────────────────────────────────────
 
-async function databaseTests() {
-  console.log("\n" + yellow("Database Integration"));
+async function sessionTests() {
+  console.log("\n" + yellow("Session Management"));
 
-  // Note: These tests verify data flows through to the database
-  // They require the dashboard API or direct DB access to verify
+  await test("New connection creates session in database", async () => {
+    const sessionId = crypto.randomUUID();
+    const anonId = crypto.randomUUID();
 
-  await test("Events flow through without error", async () => {
     const ws = await connectWs({
       key: TEST_API_KEY,
-      session: crypto.randomUUID(),
-      anon: TEST_ANON_ID,
+      session: sessionId,
+      anon: anonId,
     });
 
-    // Send multiple events to exercise batching
-    for (let i = 0; i < 3; i++) {
+    // Give time for session creation
+    await new Promise((r) => setTimeout(r, 100));
+
+    const session = await querySession(sessionId);
+    assert(session !== null, "Session should exist in database");
+    assertEqual(session!.project_id, TEST_PROJECT_ID);
+    assertEqual(session!.anon_id, anonId);
+    assert(session!.user_id === null, "User ID should be null before identify");
+
+    ws.close();
+  });
+
+  await test("Identify links user_id to session", async () => {
+    const sessionId = crypto.randomUUID();
+    const anonId = crypto.randomUUID();
+    const userId = "test-user-" + Date.now();
+
+    const ws = await connectWs({
+      key: TEST_API_KEY,
+      session: sessionId,
+      anon: anonId,
+    });
+
+    // Send identify
+    ws.send(
+      JSON.stringify({
+        type: "identify",
+        userId: userId,
+        traits: JSON.stringify({ name: "Test User" }),
+      }),
+    );
+
+    // Wait for processing
+    await new Promise((r) => setTimeout(r, 200));
+
+    const session = await querySession(sessionId);
+    assert(session !== null, "Session should exist");
+    assertEqual(session!.user_id, userId, "Session should have user_id set");
+
+    ws.close();
+  });
+
+  await test("Identify creates user record", async () => {
+    const sessionId = crypto.randomUUID();
+    const anonId = crypto.randomUUID();
+    const userId = "test-user-" + Date.now();
+
+    const ws = await connectWs({
+      key: TEST_API_KEY,
+      session: sessionId,
+      anon: anonId,
+    });
+
+    // Send identify with traits
+    ws.send(
+      JSON.stringify({
+        type: "identify",
+        userId: userId,
+        traits: JSON.stringify({ plan: "pro", email: "test@example.com" }),
+      }),
+    );
+
+    // Wait for processing
+    await new Promise((r) => setTimeout(r, 200));
+
+    const user = await queryUser(TEST_PROJECT_ID, anonId);
+    assert(user !== null, "User record should exist");
+    assertEqual(user!.user_id, userId);
+    assertEqual(user!.traits.plan, "pro");
+    assertEqual(user!.traits.email, "test@example.com");
+
+    ws.close();
+  });
+
+  await test("Session reconnect updates last_event_at", async () => {
+    const sessionId = crypto.randomUUID();
+    const anonId = crypto.randomUUID();
+
+    // First connection
+    const ws1 = await connectWs({
+      key: TEST_API_KEY,
+      session: sessionId,
+      anon: anonId,
+    });
+    await new Promise((r) => setTimeout(r, 100));
+    const session1 = await querySession(sessionId);
+    ws1.close();
+
+    // Wait a bit
+    await new Promise((r) => setTimeout(r, 100));
+
+    // Second connection with same session
+    const ws2 = await connectWs({
+      key: TEST_API_KEY,
+      session: sessionId,
+      anon: anonId,
+    });
+    await new Promise((r) => setTimeout(r, 100));
+    const session2 = await querySession(sessionId);
+    ws2.close();
+
+    assert(session1 !== null && session2 !== null, "Both sessions should exist");
+    assert(
+      session2!.last_event_at >= session1!.last_event_at,
+      "last_event_at should be updated on reconnect",
+    );
+  });
+}
+
+// ─────────────────────────────────────────────────────────────
+// Event Persistence Tests
+// ─────────────────────────────────────────────────────────────
+
+async function eventTests() {
+  console.log("\n" + yellow("Event Persistence"));
+
+  await test("Events persist to database with correct fields", async () => {
+    const sessionId = crypto.randomUUID();
+    const anonId = crypto.randomUUID();
+    const eventName = "test_click_" + Date.now();
+    const ts = Date.now();
+
+    const ws = await connectWs({
+      key: TEST_API_KEY,
+      session: sessionId,
+      anon: anonId,
+    });
+
+    ws.send(
+      JSON.stringify({
+        type: "event",
+        event: eventName,
+        props: JSON.stringify({ button: "submit", page: "/checkout" }),
+        ts: ts,
+      }),
+    );
+
+    // Wait for flush timer (5 seconds) plus buffer
+    await new Promise((r) => setTimeout(r, 5500));
+    ws.close();
+
+    const events = await queryEvents(sessionId);
+    assert(events.length >= 1, `Expected at least 1 event, got ${events.length}`);
+
+    const event = events.find((e) => e.event_name === eventName);
+    assert(event !== undefined, `Event ${eventName} should exist`);
+    assertEqual(event!.project_id, TEST_PROJECT_ID);
+    assertEqual(event!.session_id, sessionId);
+    assertEqual(event!.anon_id, anonId);
+    assertEqual(event!.properties.button, "submit");
+    assertEqual(event!.properties.page, "/checkout");
+  });
+
+  await test("Multiple events in batch all persist", async () => {
+    const sessionId = crypto.randomUUID();
+    const anonId = crypto.randomUUID();
+
+    const ws = await connectWs({
+      key: TEST_API_KEY,
+      session: sessionId,
+      anon: anonId,
+    });
+
+    // Send 5 events
+    for (let i = 0; i < 5; i++) {
       ws.send(
         JSON.stringify({
           type: "event",
-          event: "integration_test",
-          props: JSON.stringify({ test: true, iteration: i }),
-          ts: Date.now(),
+          event: `batch_event_${i}`,
+          props: JSON.stringify({ index: i }),
+          ts: Date.now() + i,
         }),
       );
     }
 
-    // Wait for batch processing
-    await new Promise((r) => setTimeout(r, 300));
+    // Wait for flush timer (5 seconds) plus buffer
+    await new Promise((r) => setTimeout(r, 5500));
     ws.close();
 
-    // TODO: Query database to verify events were inserted
-    // For now this passes if no error occurred
+    const events = await queryEvents(sessionId);
+    assertEqual(events.length, 5, `Expected 5 events, got ${events.length}`);
+  });
+
+  await test("Event user_id set after identify", async () => {
+    const sessionId = crypto.randomUUID();
+    const anonId = crypto.randomUUID();
+    const userId = "user-" + Date.now();
+
+    const ws = await connectWs({
+      key: TEST_API_KEY,
+      session: sessionId,
+      anon: anonId,
+    });
+
+    // Event before identify
+    ws.send(
+      JSON.stringify({
+        type: "event",
+        event: "before_identify",
+        props: "{}",
+        ts: Date.now(),
+      }),
+    );
+
+    await new Promise((r) => setTimeout(r, 100));
+
+    // Identify
+    ws.send(
+      JSON.stringify({
+        type: "identify",
+        userId: userId,
+        traits: "{}",
+      }),
+    );
+
+    await new Promise((r) => setTimeout(r, 100));
+
+    // Event after identify
+    ws.send(
+      JSON.stringify({
+        type: "event",
+        event: "after_identify",
+        props: "{}",
+        ts: Date.now(),
+      }),
+    );
+
+    // Wait for flush timer (5 seconds) plus buffer
+    await new Promise((r) => setTimeout(r, 5500));
+    ws.close();
+
+    const events = await queryEvents(sessionId);
+    const beforeEvent = events.find((e) => e.event_name === "before_identify");
+    const afterEvent = events.find((e) => e.event_name === "after_identify");
+
+    assert(beforeEvent !== undefined, "before_identify event should exist");
+    assert(afterEvent !== undefined, "after_identify event should exist");
+    assert(
+      beforeEvent!.user_id === null,
+      "Event before identify should have null user_id",
+    );
+    assertEqual(
+      afterEvent!.user_id,
+      userId,
+      "Event after identify should have user_id",
+    );
   });
 }
 
@@ -401,7 +629,8 @@ async function main() {
 
   await httpTests();
   await websocketTests();
-  await databaseTests();
+  await sessionTests();
+  await eventTests();
 
   // Cleanup
   await closeDb();
