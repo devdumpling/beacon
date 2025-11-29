@@ -606,6 +606,135 @@ async function eventTests() {
 }
 
 // ─────────────────────────────────────────────────────────────
+// WebSocket Edge Cases
+// ─────────────────────────────────────────────────────────────
+
+async function edgeCaseTests() {
+  console.log("\n" + yellow("WebSocket Edge Cases"));
+
+  await test("Malformed JSON is ignored gracefully", async () => {
+    const ws = await connectWs({
+      key: TEST_API_KEY,
+      session: crypto.randomUUID(),
+      anon: TEST_ANON_ID,
+    });
+
+    // Send malformed JSON - should not crash connection
+    ws.send("not valid json {{{");
+    ws.send("{incomplete");
+    ws.send("");
+
+    // Connection should still work
+    await new Promise((r) => setTimeout(r, 100));
+    assert(ws.readyState === WebSocket.OPEN, "Connection should stay open");
+
+    // Ping should still work
+    ws.send(JSON.stringify({ type: "ping" }));
+    const response = (await waitForMessage(ws)) as { type: string };
+    assertEqual(response.type, "pong");
+    ws.close();
+  });
+
+  await test("Unknown message type is ignored", async () => {
+    const ws = await connectWs({
+      key: TEST_API_KEY,
+      session: crypto.randomUUID(),
+      anon: TEST_ANON_ID,
+    });
+
+    // Send unknown message types
+    ws.send(JSON.stringify({ type: "unknown" }));
+    ws.send(JSON.stringify({ type: "foo", data: "bar" }));
+
+    await new Promise((r) => setTimeout(r, 100));
+    assert(ws.readyState === WebSocket.OPEN, "Connection should stay open");
+    ws.close();
+  });
+
+  await test("Missing required query params rejects connection", async () => {
+    // Missing key
+    const ws1 = new WebSocket(
+      `${WS_URL}/ws?session=${TEST_SESSION_ID}&anon=${TEST_ANON_ID}`,
+    );
+    const result1 = await new Promise<string>((resolve) => {
+      ws1.onclose = () => resolve("closed");
+      ws1.onerror = () => resolve("closed");
+      ws1.onopen = () => {
+        ws1.close();
+        resolve("opened");
+      };
+      setTimeout(() => resolve("timeout"), 2000);
+    });
+    assertEqual(result1, "closed", "Missing key should reject");
+
+    // Missing session
+    const ws2 = new WebSocket(
+      `${WS_URL}/ws?key=${TEST_API_KEY}&anon=${TEST_ANON_ID}`,
+    );
+    const result2 = await new Promise<string>((resolve) => {
+      ws2.onclose = () => resolve("closed");
+      ws2.onerror = () => resolve("closed");
+      ws2.onopen = () => {
+        ws2.close();
+        resolve("opened");
+      };
+      setTimeout(() => resolve("timeout"), 2000);
+    });
+    assertEqual(result2, "closed", "Missing session should reject");
+  });
+
+  await test("Event with missing fields uses defaults", async () => {
+    const sessionId = crypto.randomUUID();
+
+    const ws = await connectWs({
+      key: TEST_API_KEY,
+      session: sessionId,
+      anon: TEST_ANON_ID,
+    });
+
+    // Event with only type field - should use defaults
+    ws.send(JSON.stringify({ type: "event" }));
+
+    // Wait for flush
+    await new Promise((r) => setTimeout(r, 5500));
+    ws.close();
+
+    const events = await queryEvents(sessionId);
+    assert(events.length >= 1, "Event should be created with defaults");
+    assertEqual(events[0].event_name, "", "Default event name should be empty");
+  });
+
+  await test("Rapid messages are handled correctly", async () => {
+    const sessionId = crypto.randomUUID();
+
+    const ws = await connectWs({
+      key: TEST_API_KEY,
+      session: sessionId,
+      anon: TEST_ANON_ID,
+    });
+
+    // Send 20 events rapidly
+    for (let i = 0; i < 20; i++) {
+      ws.send(
+        JSON.stringify({
+          type: "event",
+          event: `rapid_${i}`,
+          props: "{}",
+          ts: Date.now(),
+        }),
+      );
+    }
+
+    // Wait for flush
+    await new Promise((r) => setTimeout(r, 5500));
+    ws.close();
+
+    const events = await queryEvents(sessionId);
+    assertEqual(events.length, 20, "All 20 rapid events should persist");
+  });
+}
+
+// ─────────────────────────────────────────────────────────────
 // Main
 // ─────────────────────────────────────────────────────────────
 
@@ -631,6 +760,7 @@ async function main() {
   await websocketTests();
   await sessionTests();
   await eventTests();
+  await edgeCaseTests();
 
   // Cleanup
   await closeDb();
