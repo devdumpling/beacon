@@ -54,30 +54,46 @@ fn handle(state: State, msg: Message) -> actor.Next(State, Message) {
 
       case new_count >= batch_size {
         True -> {
-          flush_events(state.db, new_events)
-          actor.continue(State(..state, events: [], count: 0))
+          // Flush and clear on success, keep events on failure
+          case flush_events(state.db, new_events) {
+            Ok(_) -> actor.continue(State(..state, events: [], count: 0))
+            Error(_) -> {
+              // TODO: Add logging here
+              // Keep events for retry on next flush
+              actor.continue(State(..state, events: new_events, count: new_count))
+            }
+          }
         }
         False -> actor.continue(State(..state, events: new_events, count: new_count))
       }
     }
 
     EnqueueIdentify(project_id, anon_id, user_id, traits) -> {
-      events_db.upsert_user(state.db, project_id, anon_id, user_id, traits)
+      // Fire and forget for now, but don't crash on error
+      case events_db.upsert_user(state.db, project_id, anon_id, user_id, traits) {
+        Ok(_) -> Nil
+        Error(_) -> Nil  // TODO: Add logging here
+      }
       actor.continue(state)
     }
 
     Flush -> {
-      case state.events {
-        [] -> Nil
-        events -> flush_events(state.db, events)
+      let new_state = case state.events {
+        [] -> state
+        events -> {
+          case flush_events(state.db, events) {
+            Ok(_) -> State(..state, events: [], count: 0)
+            Error(_) -> state  // Keep events for retry
+          }
+        }
       }
       schedule_flush(state.self)
-      actor.continue(State(..state, events: [], count: 0))
+      actor.continue(new_state)
     }
   }
 }
 
-fn flush_events(db: pog.Connection, events: List(Event)) -> Nil {
+fn flush_events(db: pog.Connection, events: List(Event)) -> Result(Int, pog.QueryError) {
   events_db.insert_batch(db, list.reverse(events))
 }
 

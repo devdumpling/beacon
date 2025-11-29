@@ -58,7 +58,7 @@ build-types:
 # Run all tests
 test: test-api test-sdk test-dashboard
 
-# Test Gleam API
+# Test Gleam API (unit tests)
 test-api:
     cd apps/api && gleam test
 
@@ -69,6 +69,10 @@ test-sdk:
 # Test dashboard
 test-dashboard:
     pnpm --filter dashboard test
+
+# Run integration tests (requires running server)
+test-integration:
+    npx tsx scripts/integration-test.ts
 
 # ─────────────────────────────────────────────────────────────
 # Lint & Format
