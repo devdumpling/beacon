@@ -1,19 +1,29 @@
+import beacon/db/events as events_db
+import beacon/log
+import beacon/types.{type Event}
 import gleam/erlang/process.{type Subject}
 import gleam/list
 import gleam/otp/actor
 import pog
-import beacon/types.{type Event}
-import beacon/db/events as events_db
-import beacon/log
 
 pub type Message {
   Enqueue(Event)
-  EnqueueIdentify(project_id: String, anon_id: String, user_id: String, traits: String)
+  EnqueueIdentify(
+    project_id: String,
+    anon_id: String,
+    user_id: String,
+    traits: String,
+  )
   Flush
 }
 
 pub type State {
-  State(events: List(Event), count: Int, self: Subject(Message), db: pog.Connection)
+  State(
+    events: List(Event),
+    count: Int,
+    self: Subject(Message),
+    db: pog.Connection,
+  )
 }
 
 const batch_size = 100
@@ -21,12 +31,14 @@ const batch_size = 100
 const flush_ms = 5000
 
 /// Start the events service actor
-pub fn start(db: pog.Connection) -> Result(actor.Started(Subject(Message)), actor.StartError) {
+pub fn start(
+  db: pog.Connection,
+) -> Result(actor.Started(Subject(Message)), actor.StartError) {
   actor.new_with_initialiser(1000, fn(self) {
     schedule_flush(self)
     Ok(
       actor.initialised(State(events: [], count: 0, self: self, db: db))
-      |> actor.returning(self)
+      |> actor.returning(self),
     )
   })
   |> actor.on_message(handle)
@@ -63,16 +75,21 @@ fn handle(state: State, msg: Message) -> actor.Next(State, Message) {
                 log.int("event_count", new_count),
               ])
               // Keep events for retry on next flush
-              actor.continue(State(..state, events: new_events, count: new_count))
+              actor.continue(
+                State(..state, events: new_events, count: new_count),
+              )
             }
           }
         }
-        False -> actor.continue(State(..state, events: new_events, count: new_count))
+        False ->
+          actor.continue(State(..state, events: new_events, count: new_count))
       }
     }
 
     EnqueueIdentify(project_id, anon_id, user_id, traits) -> {
-      case events_db.upsert_user(state.db, project_id, anon_id, user_id, traits) {
+      case
+        events_db.upsert_user(state.db, project_id, anon_id, user_id, traits)
+      {
         Ok(_) -> Nil
         Error(_) -> {
           log.error("Failed to upsert user identity", [
@@ -96,7 +113,8 @@ fn handle(state: State, msg: Message) -> actor.Next(State, Message) {
               log.error("Failed to flush event batch on timer", [
                 log.int("event_count", state.count),
               ])
-              state  // Keep events for retry
+              state
+              // Keep events for retry
             }
           }
         }
@@ -107,7 +125,10 @@ fn handle(state: State, msg: Message) -> actor.Next(State, Message) {
   }
 }
 
-fn flush_events(db: pog.Connection, events: List(Event)) -> Result(Int, pog.QueryError) {
+fn flush_events(
+  db: pog.Connection,
+  events: List(Event),
+) -> Result(Int, pog.QueryError) {
   events_db.insert_batch(db, list.reverse(events))
 }
 

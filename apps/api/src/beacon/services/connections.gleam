@@ -27,15 +27,28 @@ pub fn start() -> Result(actor.Started(Subject(Message)), actor.StartError) {
   |> actor.start
 }
 
-pub fn register(subject: Subject(Message), project_id: String, conn_id: String, conn: mist.WebsocketConnection) -> Nil {
+pub fn register(
+  subject: Subject(Message),
+  project_id: String,
+  conn_id: String,
+  conn: mist.WebsocketConnection,
+) -> Nil {
   process.send(subject, Register(project_id, conn_id, conn))
 }
 
-pub fn unregister(subject: Subject(Message), project_id: String, conn_id: String) -> Nil {
+pub fn unregister(
+  subject: Subject(Message),
+  project_id: String,
+  conn_id: String,
+) -> Nil {
   process.send(subject, Unregister(project_id, conn_id))
 }
 
-pub fn broadcast(subject: Subject(Message), project_id: String, payload: String) -> Nil {
+pub fn broadcast(
+  subject: Subject(Message),
+  project_id: String,
+  payload: String,
+) -> Nil {
   process.send(subject, Broadcast(project_id, payload))
 }
 
@@ -66,12 +79,13 @@ fn handle(state: State, msg: Message) -> actor.Next(State, Message) {
         |> result.unwrap([])
 
       // Send to each connected WebSocket, filtering out dead connections
-      let live_conns = list.filter(conns, fn(c) {
-        case mist.send_text_frame(c.conn, payload) {
-          Ok(_) -> True
-          Error(_) -> False
-        }
-      })
+      let live_conns =
+        list.filter(conns, fn(c) {
+          case mist.send_text_frame(c.conn, payload) {
+            Ok(_) -> True
+            Error(_) -> False
+          }
+        })
 
       // Update state with only live connections
       let new_conns = dict.insert(state.connections, project_id, live_conns)

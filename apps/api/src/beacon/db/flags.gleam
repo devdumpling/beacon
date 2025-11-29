@@ -1,11 +1,13 @@
+import beacon/log
+import beacon/types.{type Flag, Flag}
 import gleam/dict.{type Dict}
 import gleam/dynamic/decode
 import gleam/list
 import pog
-import beacon/types.{type Flag, Flag}
-import beacon/log
 
-pub fn get_all_grouped(db: pog.Connection) -> Result(Dict(String, List(Flag)), pog.QueryError) {
+pub fn get_all_grouped(
+  db: pog.Connection,
+) -> Result(Dict(String, List(Flag)), pog.QueryError) {
   let row_decoder = {
     use project_id <- decode.field(0, decode.string)
     use key <- decode.field(1, decode.string)
@@ -14,7 +16,9 @@ pub fn get_all_grouped(db: pog.Connection) -> Result(Dict(String, List(Flag)), p
   }
 
   case
-    pog.query("SELECT project_id, key, enabled FROM flags ORDER BY project_id, key")
+    pog.query(
+      "SELECT project_id, key, enabled FROM flags ORDER BY project_id, key",
+    )
     |> pog.returning(row_decoder)
     |> pog.execute(db)
   {
@@ -34,7 +38,12 @@ pub fn get_all_grouped(db: pog.Connection) -> Result(Dict(String, List(Flag)), p
   }
 }
 
-pub fn toggle(db: pog.Connection, project_id: String, key: String, enabled: Bool) -> Result(Nil, pog.QueryError) {
+pub fn toggle(
+  db: pog.Connection,
+  project_id: String,
+  key: String,
+  enabled: Bool,
+) -> Result(Nil, pog.QueryError) {
   case
     pog.query(
       "UPDATE flags SET enabled = $1, updated_at = NOW()
@@ -56,7 +65,12 @@ pub fn toggle(db: pog.Connection, project_id: String, key: String, enabled: Bool
   }
 }
 
-pub fn create(db: pog.Connection, project_id: String, key: String, name: String) -> Result(Nil, pog.QueryError) {
+pub fn create(
+  db: pog.Connection,
+  project_id: String,
+  key: String,
+  name: String,
+) -> Result(Nil, pog.QueryError) {
   case
     pog.query(
       "INSERT INTO flags (project_id, key, name, enabled)

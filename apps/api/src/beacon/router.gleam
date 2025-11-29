@@ -1,3 +1,10 @@
+import beacon/config.{type Config}
+import beacon/db/projects
+import beacon/log
+import beacon/services/connections
+import beacon/services/events
+import beacon/services/flags
+import beacon/ws/handler as ws
 import gleam/bytes_tree
 import gleam/erlang/process.{type Subject}
 import gleam/http/request.{type Request}
@@ -6,13 +13,6 @@ import gleam/option.{type Option, None, Some}
 import gleam/result
 import mist.{type Connection, type ResponseData}
 import pog
-import beacon/config.{type Config}
-import beacon/ws/handler as ws
-import beacon/services/events
-import beacon/services/flags
-import beacon/services/connections
-import beacon/db/projects
-import beacon/log
 
 pub type Services {
   Services(
@@ -23,7 +23,10 @@ pub type Services {
   )
 }
 
-pub fn handler(_cfg: Config, services: Services) -> fn(Request(Connection)) -> Response(ResponseData) {
+pub fn handler(
+  _cfg: Config,
+  services: Services,
+) -> fn(Request(Connection)) -> Response(ResponseData) {
   fn(req: Request(Connection)) {
     case request.path_segments(req) {
       ["ws"] -> handle_websocket(req, services)
@@ -34,7 +37,10 @@ pub fn handler(_cfg: Config, services: Services) -> fn(Request(Connection)) -> R
   }
 }
 
-fn handle_websocket(req: Request(Connection), services: Services) -> Response(ResponseData) {
+fn handle_websocket(
+  req: Request(Connection),
+  services: Services,
+) -> Response(ResponseData) {
   let query = request.get_query(req) |> result.unwrap([])
 
   let api_key = find_param(query, "key")
@@ -50,12 +56,13 @@ fn handle_websocket(req: Request(Connection), services: Services) -> Response(Re
             log.str("project_id", project.id),
           ])
 
-          let ws_services = ws.Services(
-            db: services.db,
-            events: services.events,
-            flags: services.flags,
-            conns: services.conns,
-          )
+          let ws_services =
+            ws.Services(
+              db: services.db,
+              events: services.events,
+              flags: services.flags,
+              conns: services.conns,
+            )
 
           mist.websocket(
             request: req,
@@ -80,7 +87,10 @@ fn handle_websocket(req: Request(Connection), services: Services) -> Response(Re
   }
 }
 
-fn handle_flags_api(project_id: String, services: Services) -> Response(ResponseData) {
+fn handle_flags_api(
+  project_id: String,
+  services: Services,
+) -> Response(ResponseData) {
   // Dashboard API for flag management
   let flags_json = flags.get_json(services.flags, project_id)
   json_response(flags_json, 200)

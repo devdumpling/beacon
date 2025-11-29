@@ -1,6 +1,6 @@
+import beacon/log
 import gleam/option.{type Option}
 import pog
-import beacon/log
 
 /// Session record returned from database
 pub type Session {

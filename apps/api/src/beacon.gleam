@@ -1,15 +1,15 @@
+import beacon/config
+import beacon/db/pool
+import beacon/log
+import beacon/router
+import beacon/services/connections
+import beacon/services/events
+import beacon/services/flags
 import gleam/erlang/process
 import gleam/otp/actor
 import gleam/string
 import mist
 import pog
-import beacon/config
-import beacon/router
-import beacon/db/pool
-import beacon/services/events
-import beacon/services/flags
-import beacon/services/connections
-import beacon/log
 
 pub fn main() {
   log.info("Starting Beacon API", [])
@@ -51,12 +51,13 @@ fn start_services(cfg: config.Config, db: pog.Connection) -> Nil {
               flags.refresh(flags_subject)
 
               // Create services bundle for router
-              let services = router.Services(
-                db: db,
-                events: events_subject,
-                flags: flags_subject,
-                conns: conns,
-              )
+              let services =
+                router.Services(
+                  db: db,
+                  events: events_subject,
+                  flags: flags_subject,
+                  conns: conns,
+                )
 
               start_server(cfg, services)
             }
@@ -108,7 +109,8 @@ fn mask_password(url: String) -> String {
           case string.split_once(rest, "@") {
             Ok(#(userinfo, host)) -> {
               case string.split_once(userinfo, ":") {
-                Ok(#(user, _password)) -> scheme <> "://" <> user <> ":***@" <> host
+                Ok(#(user, _password)) ->
+                  scheme <> "://" <> user <> ":***@" <> host
                 Error(_) -> url
               }
             }

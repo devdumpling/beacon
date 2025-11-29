@@ -1,3 +1,6 @@
+import beacon/db/flags as flags_db
+import beacon/services/connections
+import beacon/types.{type Flag, Flag}
 import gleam/dict.{type Dict}
 import gleam/erlang/process.{type Subject}
 import gleam/json
@@ -5,9 +8,6 @@ import gleam/list
 import gleam/otp/actor
 import gleam/result
 import pog
-import beacon/db/flags as flags_db
-import beacon/services/connections
-import beacon/types.{type Flag, Flag}
 
 pub type Message {
   Get(project_id: String, reply: Subject(List(Flag)))
@@ -17,11 +17,18 @@ pub type Message {
 }
 
 pub type State {
-  State(flags: Dict(String, List(Flag)), db: pog.Connection, conns: Subject(connections.Message))
+  State(
+    flags: Dict(String, List(Flag)),
+    db: pog.Connection,
+    conns: Subject(connections.Message),
+  )
 }
 
 /// Start the flags service actor
-pub fn start(db: pog.Connection, conns: Subject(connections.Message)) -> Result(actor.Started(Subject(Message)), actor.StartError) {
+pub fn start(
+  db: pog.Connection,
+  conns: Subject(connections.Message),
+) -> Result(actor.Started(Subject(Message)), actor.StartError) {
   actor.new(State(flags: dict.new(), db: db, conns: conns))
   |> actor.on_message(handle)
   |> actor.start
@@ -39,7 +46,12 @@ pub fn get_json(subject: Subject(Message), project_id: String) -> String {
   process.call(subject, 1000, fn(reply) { GetJson(project_id, reply) })
 }
 
-pub fn toggle(subject: Subject(Message), project_id: String, key: String, enabled: Bool) -> Nil {
+pub fn toggle(
+  subject: Subject(Message),
+  project_id: String,
+  key: String,
+  enabled: Bool,
+) -> Nil {
   process.send(subject, Toggle(project_id, key, enabled))
 }
 
@@ -104,9 +116,11 @@ fn handle(state: State, msg: Message) -> actor.Next(State, Message) {
 }
 
 fn flags_to_json(flags: List(Flag)) -> String {
-  let flag_pairs =
-    list.map(flags, fn(f) { #(f.key, json.bool(f.enabled)) })
+  let flag_pairs = list.map(flags, fn(f) { #(f.key, json.bool(f.enabled)) })
 
-  json.object([#("type", json.string("flags")), #("flags", json.object(flag_pairs))])
+  json.object([
+    #("type", json.string("flags")),
+    #("flags", json.object(flag_pairs)),
+  ])
   |> json.to_string
 }

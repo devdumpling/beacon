@@ -12,7 +12,11 @@ interface QueuedMessage {
   traits?: string; // JSON-stringified traits for API
 }
 
-type ConnectionState = "connecting" | "connected" | "disconnected" | "reconnecting";
+type ConnectionState =
+  | "connecting"
+  | "connected"
+  | "disconnected"
+  | "reconnecting";
 
 let ws: WebSocket | null = null;
 let config: Config | null = null;

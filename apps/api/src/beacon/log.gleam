@@ -2,7 +2,6 @@
 ///
 /// Outputs JSON-formatted logs for easy parsing by log aggregators.
 /// Log levels: debug, info, warn, error
-
 import gleam/io
 import gleam/json
 import gleam/list
@@ -86,14 +85,15 @@ fn log(level: Level, msg: String, fields: List(Field)) -> Nil {
     #("msg", json.string(msg)),
   ]
 
-  let extra_fields = list.map(fields, fn(f) {
-    let Field(key, value) = f
-    case value {
-      StringVal(s) -> #(key, json.string(s))
-      IntVal(i) -> #(key, json.int(i))
-      BoolVal(b) -> #(key, json.bool(b))
-    }
-  })
+  let extra_fields =
+    list.map(fields, fn(f) {
+      let Field(key, value) = f
+      case value {
+        StringVal(s) -> #(key, json.string(s))
+        IntVal(i) -> #(key, json.int(i))
+        BoolVal(b) -> #(key, json.bool(b))
+      }
+    })
 
   let all_fields = list.append(base_fields, extra_fields)
 

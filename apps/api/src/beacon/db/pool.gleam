@@ -22,13 +22,13 @@ pub type DbConfig {
 pub fn parse_url(database_url: String) -> Result(DbConfig, String) {
   use parsed <- result.try(
     uri.parse(database_url)
-    |> result.replace_error("Invalid database URL format")
+    |> result.replace_error("Invalid database URL format"),
   )
 
   // Extract host
   use host <- result.try(
     parsed.host
-    |> option.to_result("Missing host in database URL")
+    |> option.to_result("Missing host in database URL"),
   )
 
   // Extract port (default 5432)
@@ -45,9 +45,7 @@ pub fn parse_url(database_url: String) -> Result(DbConfig, String) {
   })
 
   // Parse userinfo (user:password)
-  use #(user, password) <- result.try(
-    parse_userinfo(parsed.userinfo)
-  )
+  use #(user, password) <- result.try(parse_userinfo(parsed.userinfo))
 
   Ok(DbConfig(
     host: host,
@@ -58,7 +56,9 @@ pub fn parse_url(database_url: String) -> Result(DbConfig, String) {
   ))
 }
 
-fn parse_userinfo(userinfo: Option(String)) -> Result(#(String, Option(String)), String) {
+fn parse_userinfo(
+  userinfo: Option(String),
+) -> Result(#(String, Option(String)), String) {
   case userinfo {
     None -> Error("Missing user credentials in database URL")
     Some(info) -> {

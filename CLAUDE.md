@@ -49,12 +49,12 @@ Client App → @beacon/sdk (Web Worker) → WebSocket → Gleam API (BEAM) → P
 
 ## Stack
 
-| Component | Tech | Port |
-|-----------|------|------|
-| API | Gleam on BEAM (Mist HTTP/WS) | 4000 |
-| Dashboard | SvelteKit + Tailwind | 5173 |
-| Database | PostgreSQL (Docker) | 5432 |
-| Client SDK | TypeScript, Web Worker, WebSocket | - |
+| Component  | Tech                              | Port |
+| ---------- | --------------------------------- | ---- |
+| API        | Gleam on BEAM (Mist HTTP/WS)      | 4000 |
+| Dashboard  | SvelteKit + Tailwind              | 5173 |
+| Database   | PostgreSQL (Docker)               | 5432 |
+| Client SDK | TypeScript, Web Worker, WebSocket | -    |
 
 ## Project Structure
 
@@ -105,6 +105,7 @@ beacon/
 Uses latest Gleam ecosystem (gleam_otp 1.x, mist 5.x, pog 4.x):
 
 **Actor pattern:**
+
 ```gleam
 actor.new(initial_state)
 |> actor.on_message(fn(state, msg) -> actor.Next(State, Message))
@@ -112,6 +113,7 @@ actor.new(initial_state)
 ```
 
 **Decode pattern:**
+
 ```gleam
 let decoder = {
   use field <- decode.field("name", decode.string)
@@ -121,6 +123,7 @@ json.parse(text, decoder)
 ```
 
 **Pog queries:**
+
 ```gleam
 pog.query("SELECT ...")
 |> pog.parameter(pog.text(value))
@@ -141,6 +144,7 @@ Connect: `ws://localhost:4000/ws?key=API_KEY&session=ID&anon=ID`
 The `key` parameter is the project's API key (looked up from the database to validate the connection).
 
 Messages (JSON) - **props and traits must be JSON strings**:
+
 ```json
 {"type": "event", "event": "name", "props": "{\"key\":\"value\"}", "ts": 123}
 {"type": "identify", "userId": "123", "traits": "{\"name\":\"Jane\"}"}
@@ -197,6 +201,7 @@ if (flag("new_feature")) {
 ## Environment
 
 Required `.env`:
+
 ```
 DATABASE_URL=postgres://beacon:beacon@localhost:5432/beacon?sslmode=disable
 PORT=4000

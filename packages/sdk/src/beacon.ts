@@ -22,7 +22,11 @@ export type EventProps = Record<string, string | number | boolean | null>;
  * - `disconnected` - Connection lost or closed
  * - `reconnecting` - Attempting to reconnect after a disconnect
  */
-export type ConnectionState = "connecting" | "connected" | "disconnected" | "reconnecting";
+export type ConnectionState =
+  | "connecting"
+  | "connected"
+  | "disconnected"
+  | "reconnecting";
 
 /**
  * Configuration options for initializing the Beacon SDK.
@@ -109,7 +113,7 @@ export function init(config: BeaconConfig): void {
 
     if (e.data?.type === "flags") {
       window.dispatchEvent(
-        new CustomEvent("beacon:flags", { detail: e.data.flags })
+        new CustomEvent("beacon:flags", { detail: e.data.flags }),
       );
     }
 
@@ -117,14 +121,14 @@ export function init(config: BeaconConfig): void {
       currentConnectionState = e.data.state;
       connectionChangeCallback?.(e.data.state);
       window.dispatchEvent(
-        new CustomEvent("beacon:connection", { detail: e.data.state })
+        new CustomEvent("beacon:connection", { detail: e.data.state }),
       );
     }
 
     if (e.data?.type === "error") {
       errorCallback?.(e.data.error);
       window.dispatchEvent(
-        new CustomEvent("beacon:error", { detail: e.data.error })
+        new CustomEvent("beacon:error", { detail: e.data.error }),
       );
     }
   };

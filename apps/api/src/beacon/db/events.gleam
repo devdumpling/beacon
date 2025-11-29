@@ -1,8 +1,8 @@
+import beacon/types.{type Event}
 import gleam/list
 import gleam/option.{None, Some}
 import gleam/result
 import pog
-import beacon/types.{type Event}
 
 /// Insert a batch of events into the database
 /// Returns Ok(count) on success, Error on failure

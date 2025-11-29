@@ -59,22 +59,38 @@ Single WebSocket connection handles both events (up) and flags (down).
 
 ```typescript
 // beacon.ts
-const w = new Worker(new URL('./beacon.worker.ts', import.meta.url), { type: 'module' });
+const w = new Worker(new URL("./beacon.worker.ts", import.meta.url), {
+  type: "module",
+});
 const q: unknown[] = [];
 let ok = false;
 
 w.onmessage = (e) => {
-  if (e.data === 'ready') { ok = true; q.forEach(m => w.postMessage(m)); q.length = 0; }
-  if (e.data.type === 'flags') window.dispatchEvent(new CustomEvent('beacon:flags', { detail: e.data.flags }));
+  if (e.data === "ready") {
+    ok = true;
+    q.forEach((m) => w.postMessage(m));
+    q.length = 0;
+  }
+  if (e.data.type === "flags")
+    window.dispatchEvent(
+      new CustomEvent("beacon:flags", { detail: e.data.flags }),
+    );
 };
 
-export const init = (cfg: { url: string; projectId: string }) => w.postMessage({ t: 'init', ...cfg });
+export const init = (cfg: { url: string; projectId: string }) =>
+  w.postMessage({ t: "init", ...cfg });
 export const track = (event: string, props?: Record<string, unknown>) => {
-  const m = { t: 'e', event, props, ts: Date.now() };
+  const m = { t: "e", event, props, ts: Date.now() };
   ok ? w.postMessage(m) : q.push(m);
 };
-export const identify = (userId: string, traits?: Record<string, unknown>) => w.postMessage({ t: 'id', userId, traits });
-export const page = () => track('$page', { url: location.href, path: location.pathname, ref: document.referrer });
+export const identify = (userId: string, traits?: Record<string, unknown>) =>
+  w.postMessage({ t: "id", userId, traits });
+export const page = () =>
+  track("$page", {
+    url: location.href,
+    path: location.pathname,
+    ref: document.referrer,
+  });
 ```
 
 ### Worker (~600 bytes gzipped)
@@ -93,19 +109,22 @@ let reconnectDelay = 1000;
 const id = () => crypto.randomUUID();
 
 function connect() {
-  ws = new WebSocket(`${url}/ws?project=${projectId}&session=${sessionId}&anon=${anonId}`);
-  
+  ws = new WebSocket(
+    `${url}/ws?project=${projectId}&session=${sessionId}&anon=${anonId}`,
+  );
+
   ws.onopen = () => {
     reconnectDelay = 1000;
-    self.postMessage('ready');
+    self.postMessage("ready");
     flush();
   };
-  
+
   ws.onmessage = (e) => {
     const msg = JSON.parse(e.data);
-    if (msg.type === 'flags') self.postMessage({ type: 'flags', flags: msg.flags });
+    if (msg.type === "flags")
+      self.postMessage({ type: "flags", flags: msg.flags });
   };
-  
+
   ws.onclose = () => {
     setTimeout(connect, reconnectDelay);
     reconnectDelay = Math.min(reconnectDelay * 2, 30000);
@@ -128,8 +147,8 @@ function flush() {
 
 self.onmessage = (e) => {
   const { t } = e.data;
-  
-  if (t === 'init') {
+
+  if (t === "init") {
     url = e.data.url;
     projectId = e.data.projectId;
     anonId = id();
@@ -137,15 +156,21 @@ self.onmessage = (e) => {
     connect();
     return;
   }
-  
-  if (t === 'id') {
+
+  if (t === "id") {
     userId = e.data.userId;
-    send({ type: 'identify', userId, traits: e.data.traits });
+    send({ type: "identify", userId, traits: e.data.traits });
     return;
   }
-  
-  if (t === 'e') {
-    send({ type: 'event', event: e.data.event, props: e.data.props, ts: e.data.ts, userId });
+
+  if (t === "e") {
+    send({
+      type: "event",
+      event: e.data.event,
+      props: e.data.props,
+      ts: e.data.ts,
+      userId,
+    });
   }
 };
 ```
@@ -156,49 +181,61 @@ self.onmessage = (e) => {
 // flags.ts
 let flags: Record<string, boolean> = {};
 
-window.addEventListener('beacon:flags', ((e: CustomEvent) => {
+window.addEventListener("beacon:flags", ((e: CustomEvent) => {
   flags = e.detail;
 }) as EventListener);
 
-export const isEnabled = (key: string, fallback = false) => flags[key] ?? fallback;
+export const isEnabled = (key: string, fallback = false) =>
+  flags[key] ?? fallback;
 ```
 
 ### React Integration
 
 ```typescript
 // use-beacon.tsx
-import { useEffect, useSyncExternalStore } from 'react';
-import { init, page, track, identify } from './beacon';
-import { isEnabled } from './flags';
+import { useEffect, useSyncExternalStore } from "react";
+import { init, page, track, identify } from "./beacon";
+import { isEnabled } from "./flags";
 
 let listeners = new Set<() => void>();
 let flags: Record<string, boolean> = {};
 
-if (typeof window !== 'undefined') {
-  window.addEventListener('beacon:flags', ((e: CustomEvent) => {
+if (typeof window !== "undefined") {
+  window.addEventListener("beacon:flags", ((e: CustomEvent) => {
     flags = e.detail;
-    listeners.forEach(fn => fn());
+    listeners.forEach((fn) => fn());
   }) as EventListener);
 }
 
-export function BeaconProvider({ children, url, projectId }: { 
-  children: React.ReactNode; 
-  url: string; 
+export function BeaconProvider({
+  children,
+  url,
+  projectId,
+}: {
+  children: React.ReactNode;
+  url: string;
   projectId: string;
 }) {
-  useEffect(() => { init({ url, projectId }); }, [url, projectId]);
+  useEffect(() => {
+    init({ url, projectId });
+  }, [url, projectId]);
   return children;
 }
 
 export function usePageView() {
-  useEffect(() => { page(); }, []);
+  useEffect(() => {
+    page();
+  }, []);
 }
 
 export function useFlag(key: string, fallback = false): boolean {
   return useSyncExternalStore(
-    (cb) => { listeners.add(cb); return () => listeners.delete(cb); },
+    (cb) => {
+      listeners.add(cb);
+      return () => listeners.delete(cb);
+    },
     () => flags[key] ?? fallback,
-    () => fallback
+    () => fallback,
   );
 }
 
@@ -265,22 +302,22 @@ import beacon/ws/registry
 
 pub fn main() {
   let cfg = config.load()
-  
+
   // Start supervised processes
   let assert Ok(_) = pool.start(cfg.database_url)
   let assert Ok(_) = processor.start()
   let assert Ok(_) = cache.start()
   let assert Ok(_) = registry.start()
-  
+
   // Load flags into cache
   cache.refresh()
-  
+
   let assert Ok(_) =
     router.handler()
     |> mist.new
     |> mist.port(cfg.port)
     |> mist.start_http
-  
+
   io.println("Beacon running on port " <> int.to_string(cfg.port))
   process.sleep_forever()
 }
@@ -311,7 +348,7 @@ fn handle_websocket(req: Request(Connection)) -> Response(ResponseData) {
   let project_id = get_query_param(req, "project")
   let session_id = get_query_param(req, "session")
   let anon_id = get_query_param(req, "anon")
-  
+
   case project_id, session_id, anon_id {
     Some(p), Some(s), Some(a) -> {
       mist.websocket(
@@ -357,14 +394,14 @@ pub type State {
 
 pub fn init(project_id: String, session_id: String, anon_id: String) -> #(State, Option(process.Selector(a))) {
   let state = State(project_id, session_id, anon_id, None)
-  
+
   // Register this connection for flag broadcasts
   registry.register(project_id, self())
-  
+
   // Send current flags immediately
   let flags = cache.get_for_project(project_id)
   // (send flags to client - handled in handle function's return)
-  
+
   #(state, None)
 }
 
@@ -393,18 +430,18 @@ pub fn handle(
           ))
           actor.continue(state)
         }
-        
+
         Ok(#("identify", user_id, traits, _)) -> {
           processor.enqueue_identify(state.project_id, state.anon_id, user_id, traits)
           actor.continue(State(..state, user_id: Some(user_id)))
         }
-        
+
         Error(_) -> actor.continue(state)
       }
     }
-    
+
     Binary(_) -> actor.continue(state)
-    
+
     mist.Closed | mist.Shutdown -> actor.Stop(process.Normal)
   }
 }
@@ -455,7 +492,7 @@ fn handle_message(msg: Message, state: State) -> actor.Next(Message, State) {
     Enqueue(event) -> {
       let new_buffer = [event, ..state.buffer]
       let new_count = state.count + 1
-      
+
       case new_count >= batch_size {
         True -> {
           flush_buffer(new_buffer)
@@ -464,7 +501,7 @@ fn handle_message(msg: Message, state: State) -> actor.Next(Message, State) {
         False -> actor.continue(State(buffer: new_buffer, count: new_count))
       }
     }
-    
+
     Flush -> {
       case state.buffer {
         [] -> Nil
@@ -516,12 +553,12 @@ fn handle_message(msg: Message, state: State) -> actor.Next(Message, State) {
       process.send(reply_to, flags)
       actor.continue(state)
     }
-    
+
     Refresh -> {
       let flags = flags_db.get_all_grouped()
       actor.continue(State(flags: flags))
     }
-    
+
     Update(project_id, key, enabled) -> {
       let project_flags = dict.get(state.flags, project_id) |> result.unwrap([])
       let updated = list.map(project_flags, fn(f) {
@@ -568,13 +605,13 @@ fn handle_message(msg: Message, state: State) -> actor.Next(Message, State) {
       let updated = set.insert(current, pid)
       actor.continue(State(connections: dict.insert(state.connections, project_id, updated)))
     }
-    
+
     Unregister(project_id, pid) -> {
       let current = dict.get(state.connections, project_id) |> result.unwrap(set.new())
       let updated = set.delete(current, pid)
       actor.continue(State(connections: dict.insert(state.connections, project_id, updated)))
     }
-    
+
     Broadcast(project_id, payload) -> {
       let pids = dict.get(state.connections, project_id) |> result.unwrap(set.new())
       set.to_list(pids)
@@ -593,7 +630,7 @@ pub fn broadcast_flags(project_id: String, flags: List(Flag)) -> Nil {
     #("flags", json.object(list.map(flags, fn(f) { #(f.key, json.bool(f.enabled)) }))),
   ])
   |> json.to_string
-  
+
   process.send(registry_subject(), Broadcast(project_id, payload))
 }
 ```
@@ -718,8 +755,8 @@ dashboard/
 
 ```typescript
 // src/lib/db.ts
-import postgres from 'postgres';
-import { DATABASE_URL } from '$env/static/private';
+import postgres from "postgres";
+import { DATABASE_URL } from "$env/static/private";
 
 export const sql = postgres(DATABASE_URL);
 
@@ -795,9 +832,9 @@ export async function toggleFlag(flagId: string, enabled: boolean) {
 <script lang="ts">
   import { invalidateAll } from '$app/navigation';
   import FlagToggle from '$lib/components/FlagToggle.svelte';
-  
+
   export let data;
-  
+
   async function handleToggle(flagId: string, enabled: boolean) {
     await fetch('/api/flags/toggle', {
       method: 'POST',
@@ -810,7 +847,7 @@ export async function toggleFlag(flagId: string, enabled: boolean) {
 
 <div class="p-6">
   <h1 class="text-2xl font-semibold mb-6">Feature Flags</h1>
-  
+
   <div class="bg-white rounded-lg shadow">
     <table class="w-full">
       <thead class="border-b">
@@ -827,9 +864,9 @@ export async function toggleFlag(flagId: string, enabled: boolean) {
             <td class="p-4 font-mono text-sm">{flag.key}</td>
             <td class="p-4">{flag.name}</td>
             <td class="p-4">
-              <FlagToggle 
-                enabled={flag.enabled} 
-                on:toggle={(e) => handleToggle(flag.id, e.detail)} 
+              <FlagToggle
+                enabled={flag.enabled}
+                on:toggle={(e) => handleToggle(flag.id, e.detail)}
               />
             </td>
             <td class="p-4 text-gray-500 text-sm">
@@ -853,11 +890,11 @@ export async function toggleFlag(flagId: string, enabled: boolean) {
     properties: Record<string, unknown>;
     timestamp: string;
   }>;
-  
+
   function formatTime(ts: string) {
     return new Date(ts).toLocaleTimeString();
   }
-  
+
   function eventColor(name: string) {
     if (name === '$page') return 'bg-blue-500';
     if (name.startsWith('$')) return 'bg-gray-500';
@@ -867,17 +904,17 @@ export async function toggleFlag(flagId: string, enabled: boolean) {
 
 <div class="relative">
   <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200"></div>
-  
+
   {#each events as event}
     <div class="relative pl-10 pb-6">
       <div class="absolute left-2.5 w-3 h-3 rounded-full {eventColor(event.event_name)}"></div>
-      
+
       <div class="bg-white rounded-lg shadow-sm p-4">
         <div class="flex justify-between items-start mb-2">
           <span class="font-medium">{event.event_name}</span>
           <span class="text-sm text-gray-500">{formatTime(event.timestamp)}</span>
         </div>
-        
+
         {#if Object.keys(event.properties).length > 0}
           <pre class="text-xs bg-gray-50 p-2 rounded overflow-x-auto">{JSON.stringify(event.properties, null, 2)}</pre>
         {/if}
@@ -892,24 +929,28 @@ export async function toggleFlag(flagId: string, enabled: boolean) {
 ## Prototype Milestones
 
 ### Week 1: Foundation
+
 - [ ] Gleam project with Mist HTTP server
 - [ ] Postgres schema + connection pool
 - [ ] WebSocket upgrade handler (no business logic yet)
 - [ ] Client SDK skeleton (connects, sends ping)
 
 ### Week 2: Event Pipeline
+
 - [ ] Event processor GenServer with batched writes
 - [ ] Full WebSocket message parsing
 - [ ] Client SDK: track, page, identify
 - [ ] Session creation from first event
 
 ### Week 3: Feature Flags
+
 - [ ] Flag cache GenServer
 - [ ] Flag push over existing WebSocket
 - [ ] Client flag store + React hook
 - [ ] Dashboard: flag CRUD
 
 ### Week 4: Dashboard
+
 - [ ] SvelteKit scaffold with Okta
 - [ ] Event explorer table
 - [ ] Session list + detail view

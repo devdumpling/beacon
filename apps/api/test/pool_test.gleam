@@ -1,6 +1,6 @@
-import gleeunit/should
-import gleam/option.{None, Some}
 import beacon/db/pool.{DbConfig, parse_url}
+import gleam/option.{None, Some}
+import gleeunit/should
 
 pub fn parse_url_full_test() {
   let url = "postgres://beacon:beacon@localhost:5432/beacon?sslmode=disable"
@@ -37,7 +37,8 @@ pub fn parse_url_default_port_test() {
   |> should.be_ok
   |> should.equal(DbConfig(
     host: "host",
-    port: 5432,  // Default PostgreSQL port
+    port: 5432,
+    // Default PostgreSQL port
     database: "database",
     user: "user",
     password: Some("pass"),

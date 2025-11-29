@@ -1,5 +1,12 @@
 import { useEffect, useSyncExternalStore } from "react";
-import { init, page, track, identify, type BeaconConfig, type EventProps } from "./beacon";
+import {
+  init,
+  page,
+  track,
+  identify,
+  type BeaconConfig,
+  type EventProps,
+} from "./beacon";
 import { isEnabled, subscribe, getAll } from "./flags";
 
 export { track, identify, page };
@@ -29,7 +36,7 @@ export function useFlag(key: string, fallback = false): boolean {
   return useSyncExternalStore(
     subscribe,
     () => isEnabled(key, fallback),
-    () => fallback
+    () => fallback,
   );
 }
 
