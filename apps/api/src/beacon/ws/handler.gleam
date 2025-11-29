@@ -1,16 +1,15 @@
+import beacon/db/sessions
+import beacon/services/connections
+import beacon/services/events
+import beacon/services/flags
+import beacon/types.{Event}
+import beacon/ws/messages.{EventMsg, IdentifyMsg, PingMsg}
 import gleam/bit_array
 import gleam/crypto
-import gleam/dynamic/decode
 import gleam/erlang/process.{type Subject}
-import gleam/json
 import gleam/option.{type Option, None, Some}
 import mist.{type WebsocketConnection, type WebsocketMessage, Binary, Text}
 import pog
-import beacon/services/events
-import beacon/services/flags
-import beacon/services/connections
-import beacon/db/sessions
-import beacon/types.{Event}
 
 pub type State {
   State(
@@ -56,17 +55,18 @@ pub fn init(
   // Create or update session record in database
   let _ = sessions.upsert(services.db, project_id, session_id, anon_id)
 
-  let state = State(
-    db: services.db,
-    project_id: project_id,
-    session_id: session_id,
-    anon_id: anon_id,
-    user_id: None,
-    conn_id: conn_id,
-    events_subject: services.events,
-    flags_subject: services.flags,
-    conns_subject: services.conns,
-  )
+  let state =
+    State(
+      db: services.db,
+      project_id: project_id,
+      session_id: session_id,
+      anon_id: anon_id,
+      user_id: None,
+      conn_id: conn_id,
+      events_subject: services.events,
+      flags_subject: services.flags,
+      conns_subject: services.conns,
+    )
 
   #(state, None)
 }
@@ -84,17 +84,20 @@ pub fn handle(
 ) -> mist.Next(State, WsMessage) {
   case msg {
     Text(text) -> {
-      case parse_message(text) {
+      case messages.parse(text) {
         Ok(EventMsg(event_name, props, ts)) -> {
-          events.enqueue(state.events_subject, Event(
-            project_id: state.project_id,
-            session_id: state.session_id,
-            anon_id: state.anon_id,
-            user_id: state.user_id,
-            event_name: event_name,
-            properties: props,
-            timestamp: ts,
-          ))
+          events.enqueue(
+            state.events_subject,
+            Event(
+              project_id: state.project_id,
+              session_id: state.session_id,
+              anon_id: state.anon_id,
+              user_id: state.user_id,
+              event_name: event_name,
+              properties: props,
+              timestamp: ts,
+            ),
+          )
           mist.continue(state)
         }
 
@@ -125,54 +128,6 @@ pub fn handle(
     mist.Custom(_) -> mist.continue(state)
 
     mist.Closed | mist.Shutdown -> mist.stop()
-  }
-}
-
-type ParsedMessage {
-  EventMsg(event_name: String, properties: String, timestamp: Int)
-  IdentifyMsg(user_id: String, traits: String)
-  PingMsg
-}
-
-fn parse_message(text: String) -> Result(ParsedMessage, Nil) {
-  // First decode the type field
-  let type_decoder = {
-    use msg_type <- decode.field("type", decode.string)
-    decode.success(msg_type)
-  }
-
-  case json.parse(text, type_decoder) {
-    Ok("event") -> parse_event(text)
-    Ok("identify") -> parse_identify(text)
-    Ok("ping") -> Ok(PingMsg)
-    _ -> Error(Nil)
-  }
-}
-
-fn parse_event(text: String) -> Result(ParsedMessage, Nil) {
-  let decoder = {
-    use event_name <- decode.optional_field("event", "", decode.string)
-    use props <- decode.optional_field("props", "{}", decode.string)
-    use ts <- decode.optional_field("ts", 0, decode.int)
-    decode.success(EventMsg(event_name, props, ts))
-  }
-
-  case json.parse(text, decoder) {
-    Ok(msg) -> Ok(msg)
-    Error(_) -> Error(Nil)
-  }
-}
-
-fn parse_identify(text: String) -> Result(ParsedMessage, Nil) {
-  let decoder = {
-    use user_id <- decode.field("userId", decode.string)
-    use traits <- decode.optional_field("traits", "{}", decode.string)
-    decode.success(IdentifyMsg(user_id, traits))
-  }
-
-  case json.parse(text, decoder) {
-    Ok(msg) -> Ok(msg)
-    Error(_) -> Error(Nil)
   }
 }
 

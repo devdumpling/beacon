@@ -62,7 +62,8 @@ function assert(condition: boolean, message: string) {
 function assertEqual<T>(actual: T, expected: T, message?: string) {
   if (actual !== expected) {
     throw new Error(
-      message || `Expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`
+      message ||
+        `Expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`,
     );
   }
 }
@@ -90,7 +91,10 @@ async function httpTests() {
     const res = await fetch(`${API_URL}/api/flags/${TEST_PROJECT_ID}`);
     assertEqual(res.status, 200);
     const contentType = res.headers.get("content-type");
-    assert(contentType?.includes("application/json") ?? false, "Expected JSON content-type");
+    assert(
+      contentType?.includes("application/json") ?? false,
+      "Expected JSON content-type",
+    );
     const body = await res.json();
     assert(typeof body === "object", "Expected JSON object");
   });
@@ -158,11 +162,31 @@ async function websocketTests() {
       anon: TEST_ANON_ID,
     }).toString();
 
-    const res = await fetch(`${API_URL}/ws?${query}`, {
-      headers: { Upgrade: "websocket" },
+    // Try to connect with invalid API key - should fail
+    const ws = new WebSocket(`${WS_URL}/ws?${query}`);
+
+    const result = await new Promise<"closed" | "timeout">((resolve) => {
+      const timeout = setTimeout(() => resolve("timeout"), 2000);
+      ws.onerror = () => {
+        clearTimeout(timeout);
+        resolve("closed");
+      };
+      ws.onclose = () => {
+        clearTimeout(timeout);
+        resolve("closed");
+      };
+      ws.onopen = () => {
+        clearTimeout(timeout);
+        ws.close();
+        resolve("timeout"); // Unexpected - connection should not open
+      };
     });
-    // Should get 401 Unauthorized before upgrade happens
-    assertEqual(res.status, 401);
+
+    assertEqual(
+      result,
+      "closed",
+      "Connection should be rejected with invalid API key",
+    );
   });
 
   await test("Ping/pong works", async () => {
@@ -192,7 +216,7 @@ async function websocketTests() {
         event: "test_event",
         props: JSON.stringify({ foo: "bar", num: 42 }),
         ts: Date.now(),
-      })
+      }),
     );
 
     // Give it a moment to process
@@ -213,7 +237,7 @@ async function websocketTests() {
         type: "identify",
         userId: "user-123",
         traits: JSON.stringify({ name: "Test User", plan: "pro" }),
-      })
+      }),
     );
 
     await new Promise((r) => setTimeout(r, 100));
@@ -261,7 +285,7 @@ async function databaseTests() {
           event: "integration_test",
           props: JSON.stringify({ test: true, iteration: i }),
           ts: Date.now(),
-        })
+        }),
       );
     }
 
@@ -305,7 +329,9 @@ async function main() {
   if (failed === 0) {
     console.log(green(`All ${total} tests passed!`));
   } else {
-    console.log(`${green(`${passed} passed`)}, ${red(`${failed} failed`)} of ${total} tests`);
+    console.log(
+      `${green(`${passed} passed`)}, ${red(`${failed} failed`)} of ${total} tests`,
+    );
     process.exit(1);
   }
 }
