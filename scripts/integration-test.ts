@@ -10,8 +10,13 @@
  * - Database running and migrated (just db-up && just db-migrate)
  */
 
+import postgres from "postgres";
+
 const API_URL = process.env.API_URL || "http://localhost:4000";
 const WS_URL = process.env.WS_URL || "ws://localhost:4000";
+const DATABASE_URL =
+  process.env.DATABASE_URL ||
+  "postgres://beacon:beacon@localhost:5432/beacon";
 
 // Test API key - must exist in database (created by seed/migration)
 // The integration tests require a project with this API key to exist
@@ -29,6 +34,80 @@ const green = (s: string) => `\x1b[32m${s}\x1b[0m`;
 const red = (s: string) => `\x1b[31m${s}\x1b[0m`;
 const yellow = (s: string) => `\x1b[33m${s}\x1b[0m`;
 const dim = (s: string) => `\x1b[2m${s}\x1b[0m`;
+
+// ─────────────────────────────────────────────────────────────
+// Database Helpers
+// ─────────────────────────────────────────────────────────────
+
+const sql = postgres(DATABASE_URL);
+
+interface DbEvent {
+  id: string;
+  project_id: string;
+  session_id: string;
+  anon_id: string;
+  user_id: string | null;
+  event_name: string;
+  properties: Record<string, unknown>;
+  timestamp: Date;
+}
+
+interface DbSession {
+  id: string;
+  project_id: string;
+  anon_id: string;
+  user_id: string | null;
+  started_at: Date;
+  last_event_at: Date;
+  event_count: number;
+}
+
+interface DbUser {
+  id: string;
+  project_id: string;
+  anon_id: string;
+  user_id: string | null;
+  traits: Record<string, unknown>;
+}
+
+async function queryEvents(sessionId: string): Promise<DbEvent[]> {
+  return sql<DbEvent[]>`
+    SELECT * FROM events WHERE session_id = ${sessionId}::uuid ORDER BY timestamp
+  `;
+}
+
+async function querySession(sessionId: string): Promise<DbSession | null> {
+  const rows = await sql<DbSession[]>`
+    SELECT * FROM sessions WHERE id = ${sessionId}::uuid
+  `;
+  return rows[0] ?? null;
+}
+
+async function queryUser(
+  projectId: string,
+  anonId: string,
+): Promise<DbUser | null> {
+  const rows = await sql<DbUser[]>`
+    SELECT * FROM users WHERE project_id = ${projectId}::uuid AND anon_id = ${anonId}::uuid
+  `;
+  return rows[0] ?? null;
+}
+
+async function cleanTestData(): Promise<void> {
+  // Delete test data for the test project
+  // Order matters due to foreign keys
+  await sql`DELETE FROM events WHERE project_id = ${TEST_PROJECT_ID}::uuid`;
+  await sql`DELETE FROM sessions WHERE project_id = ${TEST_PROJECT_ID}::uuid`;
+  await sql`DELETE FROM users WHERE project_id = ${TEST_PROJECT_ID}::uuid`;
+}
+
+async function closeDb(): Promise<void> {
+  await sql.end();
+}
+
+// ─────────────────────────────────────────────────────────────
+// Test Framework
+// ─────────────────────────────────────────────────────────────
 
 interface TestResult {
   name: string;
@@ -316,9 +395,16 @@ async function main() {
     process.exit(1);
   }
 
+  // Clean test data before running tests
+  console.log(dim("\nCleaning test data..."));
+  await cleanTestData();
+
   await httpTests();
   await websocketTests();
   await databaseTests();
+
+  // Cleanup
+  await closeDb();
 
   // Summary
   const passed = results.filter((r) => r.passed).length;
