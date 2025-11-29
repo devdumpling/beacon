@@ -1,6 +1,6 @@
 interface Config {
   url: string;
-  projectId: string;
+  apiKey: string;
 }
 
 interface QueuedMessage {
@@ -44,7 +44,7 @@ function connect() {
 
   const wsUrl = config.url.replace(/^http/, "ws");
   const params = new URLSearchParams({
-    project: config.projectId,
+    key: config.apiKey,
     session: sessionId,
     anon: anonId,
   });
@@ -128,7 +128,7 @@ self.onmessage = (e) => {
   const { t } = e.data;
 
   if (t === "init") {
-    config = { url: e.data.url, projectId: e.data.projectId };
+    config = { url: e.data.url, apiKey: e.data.apiKey };
     anonId = uuid();
     sessionId = uuid();
     connect();

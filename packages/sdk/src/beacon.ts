@@ -31,7 +31,7 @@ export type ConnectionState = "connecting" | "connected" | "disconnected" | "rec
  * ```ts
  * init({
  *   url: "https://beacon.example.com",
- *   projectId: "proj_abc123",
+ *   apiKey: "bk_abc123...",
  *   onConnectionChange: (state) => console.log("Connection:", state),
  *   onError: (error) => console.error("Beacon error:", error)
  * });
@@ -40,8 +40,8 @@ export type ConnectionState = "connecting" | "connected" | "disconnected" | "rec
 export interface BeaconConfig {
   /** The Beacon server URL (e.g., "https://beacon.example.com") */
   url: string;
-  /** Your project identifier */
-  projectId: string;
+  /** Your project's API key */
+  apiKey: string;
   /** Optional callback invoked when connection state changes */
   onConnectionChange?: (state: ConnectionState) => void;
   /** Optional callback invoked when an error occurs */
@@ -49,7 +49,7 @@ export interface BeaconConfig {
 }
 
 type WorkerMessage =
-  | { t: "init"; url: string; projectId: string }
+  | { t: "init"; url: string; apiKey: string }
   | { t: "e"; event: string; props?: EventProps; ts: number }
   | { t: "id"; userId: string; traits?: EventProps };
 
@@ -74,7 +74,7 @@ function send(msg: WorkerMessage) {
  * Creates a Web Worker for off-main-thread event processing and establishes
  * a WebSocket connection to the Beacon server.
  *
- * @param config - Configuration options including server URL and project ID
+ * @param config - Configuration options including server URL and API key
  *
  * @example
  * ```ts
@@ -83,7 +83,7 @@ function send(msg: WorkerMessage) {
  * // Initialize on app startup
  * init({
  *   url: "https://beacon.example.com",
- *   projectId: "proj_abc123"
+ *   apiKey: "bk_abc123..."
  * });
  *
  * // Now you can track events
@@ -129,7 +129,7 @@ export function init(config: BeaconConfig): void {
     }
   };
 
-  worker.postMessage({ t: "init", url: config.url, projectId: config.projectId });
+  worker.postMessage({ t: "init", url: config.url, apiKey: config.apiKey });
 }
 
 /**

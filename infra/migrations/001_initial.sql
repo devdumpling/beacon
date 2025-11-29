@@ -81,6 +81,13 @@ CREATE INDEX idx_users_user_id ON users (project_id, user_id) WHERE user_id IS N
 -- Seed a default project for local dev
 INSERT INTO projects (name) VALUES ('Local Development');
 
+-- Seed a test project with a known API key for integration tests
+INSERT INTO projects (id, name, api_key) VALUES (
+  '00000000-0000-0000-0000-000000000001',
+  'Integration Test Project',
+  'test_api_key_12345'
+);
+
 -- migrate:down
 
 DROP TABLE IF EXISTS users;

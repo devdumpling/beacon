@@ -13,7 +13,7 @@ interface BeaconProviderProps {
 export function BeaconProvider({ children, config }: BeaconProviderProps) {
   useEffect(() => {
     init(config);
-  }, [config.url, config.projectId]);
+  }, [config.url, config.apiKey]);
 
   return children;
 }

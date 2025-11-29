@@ -4,6 +4,7 @@ import gleam/otp/actor
 import pog
 import beacon/types.{type Event}
 import beacon/db/events as events_db
+import beacon/log
 
 pub type Message {
   Enqueue(Event)
@@ -58,7 +59,9 @@ fn handle(state: State, msg: Message) -> actor.Next(State, Message) {
           case flush_events(state.db, new_events) {
             Ok(_) -> actor.continue(State(..state, events: [], count: 0))
             Error(_) -> {
-              // TODO: Add logging here
+              log.error("Failed to flush event batch at size limit", [
+                log.int("event_count", new_count),
+              ])
               // Keep events for retry on next flush
               actor.continue(State(..state, events: new_events, count: new_count))
             }
@@ -69,10 +72,16 @@ fn handle(state: State, msg: Message) -> actor.Next(State, Message) {
     }
 
     EnqueueIdentify(project_id, anon_id, user_id, traits) -> {
-      // Fire and forget for now, but don't crash on error
       case events_db.upsert_user(state.db, project_id, anon_id, user_id, traits) {
         Ok(_) -> Nil
-        Error(_) -> Nil  // TODO: Add logging here
+        Error(_) -> {
+          log.error("Failed to upsert user identity", [
+            log.str("project_id", project_id),
+            log.str("user_id", user_id),
+            log.str("anon_id", anon_id),
+          ])
+          Nil
+        }
       }
       actor.continue(state)
     }
@@ -83,7 +92,12 @@ fn handle(state: State, msg: Message) -> actor.Next(State, Message) {
         events -> {
           case flush_events(state.db, events) {
             Ok(_) -> State(..state, events: [], count: 0)
-            Error(_) -> state  // Keep events for retry
+            Error(_) -> {
+              log.error("Failed to flush event batch on timer", [
+                log.int("event_count", state.count),
+              ])
+              state  // Keep events for retry
+            }
           }
         }
       }

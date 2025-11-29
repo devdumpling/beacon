@@ -63,31 +63,42 @@ fn handle(state: State, msg: Message) -> actor.Next(State, Message) {
     }
 
     Refresh -> {
-      let flags = flags_db.get_all_grouped(state.db)
-      actor.continue(State(..state, flags: flags))
+      case flags_db.get_all_grouped(state.db) {
+        Ok(flags) -> actor.continue(State(..state, flags: flags))
+        Error(_) -> {
+          // Error already logged in db module, keep existing state
+          actor.continue(state)
+        }
+      }
     }
 
     Toggle(project_id, key, enabled) -> {
-      // Update in DB
-      flags_db.toggle(state.db, project_id, key, enabled)
+      // Update in DB (error logged in db module)
+      case flags_db.toggle(state.db, project_id, key, enabled) {
+        Ok(_) -> {
+          // Update cache
+          let project_flags =
+            dict.get(state.flags, project_id)
+            |> result.unwrap([])
+          let updated =
+            list.map(project_flags, fn(f) {
+              case f.key == key {
+                True -> Flag(..f, enabled: enabled)
+                False -> f
+              }
+            })
+          let new_flags = dict.insert(state.flags, project_id, updated)
 
-      // Update cache
-      let project_flags =
-        dict.get(state.flags, project_id)
-        |> result.unwrap([])
-      let updated =
-        list.map(project_flags, fn(f) {
-          case f.key == key {
-            True -> Flag(..f, enabled: enabled)
-            False -> f
-          }
-        })
-      let new_flags = dict.insert(state.flags, project_id, updated)
+          // Broadcast to connected clients
+          connections.broadcast(state.conns, project_id, flags_to_json(updated))
 
-      // Broadcast to connected clients
-      connections.broadcast(state.conns, project_id, flags_to_json(updated))
-
-      actor.continue(State(..state, flags: new_flags))
+          actor.continue(State(..state, flags: new_flags))
+        }
+        Error(_) -> {
+          // Error already logged in db module, keep existing state
+          actor.continue(state)
+        }
+      }
     }
   }
 }

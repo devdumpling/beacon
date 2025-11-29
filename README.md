@@ -74,8 +74,8 @@ beacon/
 import { init, track, page, identify } from "@beacon/sdk";
 import { BeaconProvider, useFlag, usePageView } from "@beacon/sdk/react";
 
-// Initialize
-init({ url: "wss://your-beacon-api.com", projectId: "your-project-id" });
+// Initialize with your API key
+init({ url: "wss://your-beacon-api.com", apiKey: "your-api-key" });
 
 // Track events
 track("button_clicked", { button_id: "signup" });

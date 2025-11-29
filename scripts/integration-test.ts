@@ -13,10 +13,16 @@
 const API_URL = process.env.API_URL || "http://localhost:4000";
 const WS_URL = process.env.WS_URL || "ws://localhost:4000";
 
-// Test UUIDs - the database expects UUID format for project, session, and anon IDs
-const TEST_PROJECT_ID = "00000000-0000-0000-0000-000000000001";
+// Test API key - must exist in database (created by seed/migration)
+// The integration tests require a project with this API key to exist
+const TEST_API_KEY = process.env.TEST_API_KEY || "test_api_key_12345";
+
+// Test IDs for session/anon (can be any UUID format)
 const TEST_SESSION_ID = "00000000-0000-0000-0000-000000000002";
 const TEST_ANON_ID = "00000000-0000-0000-0000-000000000003";
+
+// Project ID for direct API calls (like /api/flags/:project_id)
+const TEST_PROJECT_ID = "00000000-0000-0000-0000-000000000001";
 
 // ANSI colors for output
 const green = (s: string) => `\x1b[32m${s}\x1b[0m`;
@@ -136,18 +142,32 @@ function waitForMessage(ws: WebSocket, timeout = 5000): Promise<unknown> {
 async function websocketTests() {
   console.log("\n" + yellow("WebSocket"));
 
-  await test("Connect with valid params", async () => {
+  await test("Connect with valid API key", async () => {
     const ws = await connectWs({
-      project: TEST_PROJECT_ID,
+      key: TEST_API_KEY,
       session: TEST_SESSION_ID,
       anon: TEST_ANON_ID,
     });
     ws.close();
   });
 
+  await test("Reject connection with invalid API key", async () => {
+    const query = new URLSearchParams({
+      key: "invalid_api_key",
+      session: TEST_SESSION_ID,
+      anon: TEST_ANON_ID,
+    }).toString();
+
+    const res = await fetch(`${API_URL}/ws?${query}`, {
+      headers: { Upgrade: "websocket" },
+    });
+    // Should get 401 Unauthorized before upgrade happens
+    assertEqual(res.status, 401);
+  });
+
   await test("Ping/pong works", async () => {
     const ws = await connectWs({
-      project: TEST_PROJECT_ID,
+      key: TEST_API_KEY,
       session: crypto.randomUUID(),
       anon: TEST_ANON_ID,
     });
@@ -160,7 +180,7 @@ async function websocketTests() {
 
   await test("Send event message with JSON string props", async () => {
     const ws = await connectWs({
-      project: TEST_PROJECT_ID,
+      key: TEST_API_KEY,
       session: crypto.randomUUID(),
       anon: TEST_ANON_ID,
     });
@@ -182,7 +202,7 @@ async function websocketTests() {
 
   await test("Send identify message with JSON string traits", async () => {
     const ws = await connectWs({
-      project: TEST_PROJECT_ID,
+      key: TEST_API_KEY,
       session: crypto.randomUUID(),
       anon: TEST_ANON_ID,
     });
@@ -204,7 +224,7 @@ async function websocketTests() {
   // This is a potential enhancement - flags are only broadcast on updates
   await test("Connection stays open without messages", async () => {
     const ws = await connectWs({
-      project: TEST_PROJECT_ID,
+      key: TEST_API_KEY,
       session: crypto.randomUUID(),
       anon: TEST_ANON_ID,
     });
@@ -228,7 +248,7 @@ async function databaseTests() {
 
   await test("Events flow through without error", async () => {
     const ws = await connectWs({
-      project: TEST_PROJECT_ID,
+      key: TEST_API_KEY,
       session: crypto.randomUUID(),
       anon: TEST_ANON_ID,
     });

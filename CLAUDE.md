@@ -9,6 +9,36 @@ just setup    # Install deps, start Postgres, run migrations
 just dev      # Start API (4000) + Dashboard (5173)
 ```
 
+## Commands
+
+**Always use `just` commands for running tasks.** See `justfile` for all available commands.
+
+```bash
+# Development
+just dev              # Start all services (API + Dashboard)
+just dev-api          # Start Gleam API only
+just dev-dashboard    # Start SvelteKit dashboard only
+
+# Build
+just build            # Build all packages
+just build-api        # Build Gleam API
+just build-sdk        # Build SDK package
+
+# Test
+just test             # Run all tests
+just test-api         # Run Gleam unit tests
+just test-integration # Run integration tests (requires running server)
+
+# Database
+just db-up            # Start Postgres container
+just db-migrate       # Run migrations
+just db-reset         # Drop and recreate database
+just db-shell         # Open psql shell
+
+# Lint
+just lint             # Lint and format all code
+```
+
 ## Architecture
 
 ```
@@ -46,7 +76,9 @@ beacon/
 │   │   │   └── db/                 # Database queries
 │   │   │       ├── pool.gleam      # Pog connection pool + URL parsing
 │   │   │       ├── events.gleam    # Event inserts (UUID/JSONB casts)
-│   │   │       └── flags.gleam     # Flag queries
+│   │   │       ├── flags.gleam     # Flag queries
+│   │   │       ├── projects.gleam  # Project/API key lookup
+│   │   │       └── sessions.gleam  # Session upsert/update
 │   │   └── test/                   # Unit tests (gleeunit)
 │   │       ├── beacon_test.gleam
 │   │       └── pool_test.gleam
@@ -104,7 +136,9 @@ pog.query("SELECT ...")
 
 ## WebSocket Protocol
 
-Connect: `ws://localhost:4000/ws?project=ID&session=ID&anon=ID`
+Connect: `ws://localhost:4000/ws?key=API_KEY&session=ID&anon=ID`
+
+The `key` parameter is the project's API key (looked up from the database to validate the connection).
 
 Messages (JSON) - **props and traits must be JSON strings**:
 ```json
@@ -142,8 +176,8 @@ Output: `{"level":"info","msg":"Server started","port":4000}`
 ```typescript
 import { init, track, identify, page, flag } from "@beacon/sdk";
 
-// Initialize
-init({ url: "https://beacon.example.com", projectId: "proj_123" });
+// Initialize with your API key
+init({ url: "https://beacon.example.com", apiKey: "bk_your_api_key" });
 
 // Track events
 track("button_clicked", { button_id: "signup" });

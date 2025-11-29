@@ -52,6 +52,7 @@ fn start_services(cfg: config.Config, db: pog.Connection) -> Nil {
 
               // Create services bundle for router
               let services = router.Services(
+                db: db,
                 events: events_subject,
                 flags: flags_subject,
                 conns: conns,

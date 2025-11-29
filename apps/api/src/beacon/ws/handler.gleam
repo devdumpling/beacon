@@ -5,13 +5,16 @@ import gleam/erlang/process.{type Subject}
 import gleam/json
 import gleam/option.{type Option, None, Some}
 import mist.{type WebsocketConnection, type WebsocketMessage, Binary, Text}
+import pog
 import beacon/services/events
 import beacon/services/flags
 import beacon/services/connections
+import beacon/db/sessions
 import beacon/types.{Event}
 
 pub type State {
   State(
+    db: pog.Connection,
     project_id: String,
     session_id: String,
     anon_id: String,
@@ -25,6 +28,7 @@ pub type State {
 
 pub type Services {
   Services(
+    db: pog.Connection,
     events: Subject(events.Message),
     flags: Subject(flags.Message),
     conns: Subject(connections.Message),
@@ -49,7 +53,11 @@ pub fn init(
   // Register connection for flag broadcasts
   connections.register(services.conns, project_id, conn_id, conn)
 
+  // Create or update session record in database
+  let _ = sessions.upsert(services.db, project_id, session_id, anon_id)
+
   let state = State(
+    db: services.db,
     project_id: project_id,
     session_id: session_id,
     anon_id: anon_id,
@@ -98,6 +106,8 @@ pub fn handle(
             user_id,
             traits,
           )
+          // Link user_id to session
+          let _ = sessions.set_user(state.db, state.session_id, user_id)
           mist.continue(State(..state, user_id: Some(user_id)))
         }
 
