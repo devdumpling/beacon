@@ -1,13 +1,50 @@
+/**
+ * Properties that can be attached to events or user traits.
+ * Supports strings, numbers, booleans, and null values.
+ *
+ * @example
+ * ```ts
+ * track("purchase", {
+ *   product_id: "sku-123",
+ *   price: 29.99,
+ *   is_gift: false,
+ *   coupon: null
+ * });
+ * ```
+ */
 export type EventProps = Record<string, string | number | boolean | null>;
 
+/**
+ * Connection state for the WebSocket connection to the Beacon server.
+ *
+ * - `connecting` - Initial connection attempt in progress
+ * - `connected` - Successfully connected and ready to send events
+ * - `disconnected` - Connection lost or closed
+ * - `reconnecting` - Attempting to reconnect after a disconnect
+ */
 export type ConnectionState = "connecting" | "connected" | "disconnected" | "reconnecting";
 
+/**
+ * Configuration options for initializing the Beacon SDK.
+ *
+ * @example
+ * ```ts
+ * init({
+ *   url: "https://beacon.example.com",
+ *   projectId: "proj_abc123",
+ *   onConnectionChange: (state) => console.log("Connection:", state),
+ *   onError: (error) => console.error("Beacon error:", error)
+ * });
+ * ```
+ */
 export interface BeaconConfig {
+  /** The Beacon server URL (e.g., "https://beacon.example.com") */
   url: string;
+  /** Your project identifier */
   projectId: string;
-  /** Optional callback for connection state changes */
+  /** Optional callback invoked when connection state changes */
   onConnectionChange?: (state: ConnectionState) => void;
-  /** Optional callback for errors */
+  /** Optional callback invoked when an error occurs */
   onError?: (error: string) => void;
 }
 
@@ -32,8 +69,26 @@ function send(msg: WorkerMessage) {
 }
 
 /**
- * Initialize the Beacon SDK
- * @param config - Configuration options
+ * Initialize the Beacon SDK. Must be called before any other SDK methods.
+ *
+ * Creates a Web Worker for off-main-thread event processing and establishes
+ * a WebSocket connection to the Beacon server.
+ *
+ * @param config - Configuration options including server URL and project ID
+ *
+ * @example
+ * ```ts
+ * import { init, track, identify, page } from "@beacon/sdk";
+ *
+ * // Initialize on app startup
+ * init({
+ *   url: "https://beacon.example.com",
+ *   projectId: "proj_abc123"
+ * });
+ *
+ * // Now you can track events
+ * track("app_loaded");
+ * ```
  */
 export function init(config: BeaconConfig): void {
   if (typeof window === "undefined") return;
@@ -78,33 +133,96 @@ export function init(config: BeaconConfig): void {
 }
 
 /**
- * Get the current connection state
+ * Get the current WebSocket connection state.
+ *
+ * @returns The current connection state
+ *
+ * @example
+ * ```ts
+ * if (getConnectionState() === "connected") {
+ *   console.log("Ready to send events");
+ * }
+ * ```
  */
 export function getConnectionState(): ConnectionState {
   return currentConnectionState;
 }
 
 /**
- * Track a custom event
- * @param event - Event name
- * @param props - Optional event properties
+ * Track a custom event with optional properties.
+ *
+ * Events are queued and sent via WebSocket. If disconnected, events are
+ * buffered and sent when the connection is re-established.
+ *
+ * @param event - Event name (e.g., "button_clicked", "purchase_completed")
+ * @param props - Optional key-value properties to attach to the event
+ *
+ * @example
+ * ```ts
+ * // Simple event
+ * track("signup_started");
+ *
+ * // Event with properties
+ * track("item_added_to_cart", {
+ *   product_id: "sku-456",
+ *   quantity: 2,
+ *   price: 19.99
+ * });
+ * ```
  */
 export function track(event: string, props?: EventProps): void {
   send({ t: "e", event, props, ts: Date.now() });
 }
 
 /**
- * Identify a user
- * @param userId - User identifier
- * @param traits - Optional user traits
+ * Identify the current user and associate them with their anonymous activity.
+ *
+ * Call this when a user logs in or when you know their identity. All subsequent
+ * events will be associated with this user ID. User traits are stored and can
+ * be used for segmentation.
+ *
+ * @param userId - Unique user identifier from your system
+ * @param traits - Optional user properties (e.g., name, email, plan)
+ *
+ * @example
+ * ```ts
+ * // After user logs in
+ * identify("user_12345", {
+ *   email: "user@example.com",
+ *   name: "Jane Doe",
+ *   plan: "pro",
+ *   created_at: "2024-01-15"
+ * });
+ * ```
  */
 export function identify(userId: string, traits?: EventProps): void {
   send({ t: "id", userId, traits });
 }
 
 /**
- * Track a page view
- * @param props - Optional additional properties
+ * Track a page view with automatic URL and referrer capture.
+ *
+ * Automatically captures the current URL, path, and referrer. Call this
+ * on route changes in SPAs or on page load for traditional sites.
+ *
+ * The event is tracked as `$page` with the following automatic properties:
+ * - `url`: Full URL (window.location.href)
+ * - `path`: Path only (window.location.pathname)
+ * - `ref`: Referrer (document.referrer)
+ *
+ * @param props - Optional additional properties to merge with automatic ones
+ *
+ * @example
+ * ```ts
+ * // Basic page view
+ * page();
+ *
+ * // With additional context
+ * page({
+ *   section: "blog",
+ *   author: "jane-doe"
+ * });
+ * ```
  */
 export function page(props?: EventProps): void {
   if (typeof window === "undefined") return;

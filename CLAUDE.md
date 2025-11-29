@@ -32,23 +32,35 @@ Client App → @beacon/sdk (Web Worker) → WebSocket → Gleam API (BEAM) → P
 beacon/
 ├── apps/
 │   ├── api/                 # Gleam backend
-│   │   └── src/beacon/
-│   │       ├── beacon.gleam        # Entry point
-│   │       ├── config.gleam        # Env config
-│   │       ├── router.gleam        # HTTP/WS routing
-│   │       ├── types.gleam         # Shared types (Event, Flag)
-│   │       ├── ws/handler.gleam    # WebSocket message handling
-│   │       ├── services/           # Actor-based services
-│   │       │   ├── events.gleam    # Event batching & flush
-│   │       │   ├── flags.gleam     # Flag cache & broadcast
-│   │       │   └── connections.gleam # WS connection registry
-│   │       └── db/                 # Database queries
-│   │           ├── pool.gleam      # Pog connection pool
-│   │           ├── events.gleam    # Event inserts
-│   │           └── flags.gleam     # Flag queries
+│   │   ├── src/beacon/
+│   │   │   ├── beacon.gleam        # Entry point (with proper error handling)
+│   │   │   ├── config.gleam        # Env config
+│   │   │   ├── log.gleam           # Structured JSON logging
+│   │   │   ├── router.gleam        # HTTP/WS routing
+│   │   │   ├── types.gleam         # Shared types (Event, Flag)
+│   │   │   ├── ws/handler.gleam    # WebSocket message handling
+│   │   │   ├── services/           # Actor-based services
+│   │   │   │   ├── events.gleam    # Event batching & flush
+│   │   │   │   ├── flags.gleam     # Flag cache & broadcast
+│   │   │   │   └── connections.gleam # WS connection registry (ID-based)
+│   │   │   └── db/                 # Database queries
+│   │   │       ├── pool.gleam      # Pog connection pool + URL parsing
+│   │   │       ├── events.gleam    # Event inserts (UUID/JSONB casts)
+│   │   │       └── flags.gleam     # Flag queries
+│   │   └── test/                   # Unit tests (gleeunit)
+│   │       ├── beacon_test.gleam
+│   │       └── pool_test.gleam
 │   └── dashboard/           # SvelteKit frontend
 ├── packages/
 │   └── sdk/                 # Client SDK (@beacon/sdk)
+│       └── src/
+│           ├── beacon.ts           # Core SDK (init, track, identify, page)
+│           ├── beacon.worker.ts    # Web Worker for off-main-thread processing
+│           ├── flags.ts            # Feature flags (isEnabled, subscribe, getAll)
+│           ├── react.ts            # React hooks
+│           └── index.ts            # Public exports
+├── scripts/
+│   └── integration-test.ts  # Integration test suite
 ├── infra/
 │   ├── docker-compose.yml   # Postgres container
 │   └── migrations/          # dbmate SQL migrations
@@ -94,14 +106,59 @@ pog.query("SELECT ...")
 
 Connect: `ws://localhost:4000/ws?project=ID&session=ID&anon=ID`
 
-Messages (JSON):
+Messages (JSON) - **props and traits must be JSON strings**:
 ```json
-{"type": "event", "event": "name", "props": {}, "ts": 123}
-{"type": "identify", "userId": "123", "traits": {}}
+{"type": "event", "event": "name", "props": "{\"key\":\"value\"}", "ts": 123}
+{"type": "identify", "userId": "123", "traits": "{\"name\":\"Jane\"}"}
 {"type": "ping"} → {"type": "pong"}
 ```
 
 Server pushes flag updates: `{"type": "flags", "flags": {"key": true}}`
+
+## Testing
+
+```bash
+just test-api          # Run Gleam unit tests (7 tests)
+just test-integration  # Run integration tests (9 tests, requires running server)
+```
+
+Integration tests cover HTTP endpoints, WebSocket connectivity, and database flow.
+
+## Logging
+
+The API uses structured JSON logging via `beacon/log.gleam`:
+
+```gleam
+import beacon/log
+
+log.info("Server started", [log.int("port", 4000)])
+log.error("Connection failed", [log.str("reason", "timeout")])
+```
+
+Output: `{"level":"info","msg":"Server started","port":4000}`
+
+## SDK Usage
+
+```typescript
+import { init, track, identify, page, flag } from "@beacon/sdk";
+
+// Initialize
+init({ url: "https://beacon.example.com", projectId: "proj_123" });
+
+// Track events
+track("button_clicked", { button_id: "signup" });
+
+// Identify users
+identify("user_456", { plan: "pro", email: "user@example.com" });
+
+// Track page views
+page();
+
+// Feature flags
+if (flag("new_feature")) {
+  // Show new feature
+}
+```
 
 ## Environment
 
