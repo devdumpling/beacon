@@ -13,6 +13,9 @@ node_modules/
 # Gleam build
 /apps/api/build/
 
+# Erlang crash dumps
+erl_crash.dump
+
 # Build outputs
 dist/
 
