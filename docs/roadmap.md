@@ -17,9 +17,9 @@ Beacon's path to a stable alpha release.
 
 ### 🚧 M1: Examples & Polish
 
-- [ ] React example app
+- [x] React example app
+- [x] Flag management UI
 - [ ] Dashboard authentication
-- [ ] Flag management UI
 - [ ] Basic analytics visualizations
 
 ### 📋 M2: Benchmarking
