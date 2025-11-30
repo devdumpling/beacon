@@ -9,6 +9,21 @@ import {
 import "./style.css";
 
 // ============================================================================
+// Types
+// ============================================================================
+
+type LogType = "event" | "identify" | "page" | "connection" | "flags" | "error" | "info";
+type LogDirection = "sent" | "received" | "system";
+
+interface LogEntry {
+  type: LogType;
+  message: string;
+  direction: LogDirection;
+  payload?: Record<string, unknown>;
+  timestamp: Date;
+}
+
+// ============================================================================
 // DOM Elements
 // ============================================================================
 
@@ -27,6 +42,8 @@ const logoutBtn = document.getElementById("logout-btn")!;
 const btnAddCart = document.getElementById("btn-add-cart")!;
 const btnCheckout = document.getElementById("btn-checkout")!;
 const btnUpgrade = document.getElementById("btn-upgrade")!;
+const codePreview = document.getElementById("code-preview")!;
+const clearLogBtn = document.getElementById("clear-log")!;
 
 const flagsContainer = document.getElementById("flags-container")!;
 const eventLog = document.getElementById("event-log")!;
@@ -50,19 +67,151 @@ function setCurrentUser(userId: string | null): void {
 }
 
 // ============================================================================
+// JSON Syntax Highlighting
+// ============================================================================
+
+function syntaxHighlight(obj: unknown): string {
+  const json = JSON.stringify(obj, null, 2);
+  return json.replace(
+    /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
+    (match) => {
+      let cls = "number";
+      if (/^"/.test(match)) {
+        if (/:$/.test(match)) {
+          cls = "key";
+          match = match.slice(0, -1); // Remove colon for keys
+          return `<span class="${cls}">${match}</span>:`;
+        } else {
+          cls = "string";
+        }
+      } else if (/true|false/.test(match)) {
+        cls = "number"; // booleans same color as numbers
+      } else if (/null/.test(match)) {
+        cls = "null";
+      }
+      return `<span class="${cls}">${match}</span>`;
+    }
+  );
+}
+
+// ============================================================================
 // Event Log
 // ============================================================================
 
-function log(message: string, type: "info" | "success" | "error" | "event" = "info") {
-  const entry = document.createElement("div");
-  entry.className = `log-entry log-${type}`;
-  entry.innerHTML = `<span class="log-time">${new Date().toLocaleTimeString()}</span> ${message}`;
-  eventLog.insertBefore(entry, eventLog.firstChild);
+const icons: Record<LogType, string> = {
+  event: "◆",
+  identify: "●",
+  page: "◇",
+  connection: "◈",
+  flags: "⚑",
+  error: "✕",
+  info: "○",
+};
 
-  // Keep only last 50 entries
-  while (eventLog.children.length > 50) {
+function log(entry: LogEntry) {
+  // Remove empty state message if present
+  const emptyState = eventLog.querySelector(".log-empty");
+  if (emptyState) {
+    emptyState.remove();
+  }
+
+  const el = document.createElement("details");
+  el.className = `log-entry type-${entry.type}`;
+
+  const time = entry.timestamp.toLocaleTimeString();
+  const icon = icons[entry.type];
+  const badge = entry.direction !== "system"
+    ? `<span class="log-badge ${entry.direction}">${entry.direction}</span>`
+    : "";
+
+  el.innerHTML = `
+    <summary>
+      <span class="log-time">${time}</span>
+      <span class="log-icon">${icon}</span>
+      <span class="log-message">${entry.message}</span>
+      ${badge}
+    </summary>
+    ${entry.payload ? `<div class="log-payload"><pre>${syntaxHighlight(entry.payload)}</pre></div>` : ""}
+  `;
+
+  eventLog.insertBefore(el, eventLog.firstChild);
+
+  // Keep only last 100 entries
+  while (eventLog.children.length > 100) {
     eventLog.removeChild(eventLog.lastChild!);
   }
+}
+
+function logEvent(eventName: string, props?: Record<string, unknown>) {
+  log({
+    type: "event",
+    message: `<strong>${eventName}</strong>`,
+    direction: "sent",
+    payload: { type: "event", event: eventName, props, ts: Date.now() },
+    timestamp: new Date(),
+  });
+}
+
+function logIdentify(userId: string, traits?: Record<string, unknown>) {
+  log({
+    type: "identify",
+    message: `Identified as <strong>${userId}</strong>`,
+    direction: "sent",
+    payload: { type: "identify", userId, traits },
+    timestamp: new Date(),
+  });
+}
+
+function logPage(props?: Record<string, unknown>) {
+  log({
+    type: "page",
+    message: `<strong>$page</strong> view`,
+    direction: "sent",
+    payload: {
+      type: "event",
+      event: "$page",
+      props: { url: window.location.href, path: window.location.pathname, ...props },
+      ts: Date.now()
+    },
+    timestamp: new Date(),
+  });
+}
+
+function logConnection(state: ConnectionState) {
+  log({
+    type: "connection",
+    message: `Connection: <strong>${state}</strong>`,
+    direction: "system",
+    timestamp: new Date(),
+  });
+}
+
+function logFlags(flags: Record<string, boolean>) {
+  log({
+    type: "flags",
+    message: `Received <strong>${Object.keys(flags).length}</strong> flags`,
+    direction: "received",
+    payload: flags,
+    timestamp: new Date(),
+  });
+}
+
+function logInfo(message: string) {
+  log({
+    type: "info",
+    message,
+    direction: "system",
+    timestamp: new Date(),
+  });
+}
+
+function logError(message: string) {
+  log({
+    type: "error",
+    message,
+    direction: "system",
+    timestamp: new Date(),
+  });
 }
 
 // ============================================================================
@@ -72,7 +221,7 @@ function log(message: string, type: "info" | "success" | "error" | "event" = "in
 function updateConnectionStatus(state: ConnectionState) {
   statusDot.className = `status-dot status-${state}`;
   statusText.textContent = state.charAt(0).toUpperCase() + state.slice(1);
-  log(`Connection: ${state}`, state === "connected" ? "success" : "info");
+  logConnection(state);
 }
 
 function updateAuthUI(userId: string | null) {
@@ -109,66 +258,63 @@ function updateFlags(flags: Record<string, boolean>) {
 }
 
 // ============================================================================
+// Code Preview (Hover)
+// ============================================================================
+
+function showCodePreview(code: string) {
+  codePreview.innerHTML = `<code>${code}</code>`;
+}
+
+function hideCodePreview() {
+  codePreview.innerHTML = '<span class="code-preview-label">Hover a button to see the code</span>';
+}
+
+// ============================================================================
 // Auth Handlers
 // ============================================================================
 
 function handleLogin(username: string) {
-  // Store in session
   setCurrentUser(username);
 
-  // Call identify() - this links the anonymous user to the known user
-  identify(username, {
-    signed_up_at: new Date().toISOString(),
-  });
+  const traits = { signed_up_at: new Date().toISOString() };
+  identify(username, traits);
+  logIdentify(username, traits);
 
-  // Track the login event
-  track("user_signed_in", {
-    method: "form",
-  });
+  const eventProps = { method: "form" };
+  track("user_signed_in", eventProps);
+  logEvent("user_signed_in", eventProps);
 
-  // Update UI
   updateAuthUI(username);
-
-  log(`Identified as <strong>${username}</strong>`, "success");
-  log(
-    `<span class="log-detail">Anonymous activity is now linked to this user</span>`,
-    "info"
-  );
+  logInfo("Anonymous activity is now linked to this user");
 }
 
 function handleLogout() {
   const previousUser = getCurrentUser();
   setCurrentUser(null);
 
-  // Track logout before clearing
   track("user_signed_out");
+  logEvent("user_signed_out");
 
-  // Update UI
   updateAuthUI(null);
-
-  log(`Signed out from <strong>${previousUser}</strong>`, "info");
-  log(
-    `<span class="log-detail">Note: SDK continues tracking with same anon_id until page refresh</span>`,
-    "info"
-  );
+  logInfo(`Signed out from ${previousUser}`);
 }
 
 // ============================================================================
 // Initialize SDK
 // ============================================================================
 
-log("Initializing Beacon SDK...");
+logInfo("Initializing Beacon SDK...");
 
 init({
   url: "http://localhost:4000",
   apiKey: "test_api_key_12345",
   onConnectionChange: updateConnectionStatus,
-  onError: (error) => log(`Error: ${error}`, "error"),
+  onError: (error) => logError(error),
 });
 
 // Track initial page view
 page({ page_name: "home" });
-log(`Tracked <strong>$page</strong> view`, "event");
+logPage({ page_name: "home" });
 
 // ============================================================================
 // Restore Session
@@ -176,13 +322,12 @@ log(`Tracked <strong>$page</strong> view`, "event");
 
 const existingUser = getCurrentUser();
 if (existingUser) {
-  // Re-identify on page load if user was logged in
   identify(existingUser);
   updateAuthUI(existingUser);
-  log(`Restored session for <strong>${existingUser}</strong>`, "info");
+  logInfo(`Restored session for ${existingUser}`);
 } else {
   updateAuthUI(null);
-  log("Tracking as anonymous user", "info");
+  logInfo("Tracking as anonymous user");
 }
 
 // ============================================================================
@@ -191,7 +336,7 @@ if (existingUser) {
 
 // Listen for flag updates from server
 window.addEventListener("beacon:flags", ((event: CustomEvent) => {
-  log("Received flag update", "success");
+  logFlags(event.detail);
   updateFlags(event.detail);
 }) as EventListener);
 
@@ -208,35 +353,54 @@ loginForm.addEventListener("submit", (e) => {
 // Logout button
 logoutBtn.addEventListener("click", handleLogout);
 
-// App interaction buttons - simulating real user actions
+// Clear log button
+clearLogBtn.addEventListener("click", () => {
+  eventLog.innerHTML = '<div class="log-empty">Events will appear here as they\'re sent...</div>';
+});
+
+// Action buttons with code preview
+const actionButtons = [btnAddCart, btnCheckout, btnUpgrade];
+actionButtons.forEach((btn) => {
+  btn.addEventListener("mouseenter", () => {
+    const code = btn.getAttribute("data-code");
+    if (code) showCodePreview(code);
+  });
+  btn.addEventListener("mouseleave", hideCodePreview);
+});
+
+// Add to Cart
 btnAddCart.addEventListener("click", () => {
   const productId = `prod_${Math.random().toString(36).slice(2, 6)}`;
-  track("product_added_to_cart", {
+  const props = {
     product_id: productId,
     price: 29.99,
     currency: "USD",
-  });
-  log(
-    `Tracked <strong>product_added_to_cart</strong> <span class="log-detail">${productId}</span>`,
-    "event"
-  );
+  };
+  track("product_added_to_cart", props);
+  logEvent("product_added_to_cart", props);
 });
 
+// Start Checkout
 btnCheckout.addEventListener("click", () => {
-  track("checkout_started", {
+  const props = {
     cart_value: 59.98,
     item_count: 2,
-  });
-  log(`Tracked <strong>checkout_started</strong>`, "event");
+  };
+  track("checkout_started", props);
+  logEvent("checkout_started", props);
 });
 
+// View Pricing
 btnUpgrade.addEventListener("click", () => {
-  track("pricing_page_viewed", {
+  const props = {
     source: "header_cta",
     current_plan: "free",
-  });
-  log(`Tracked <strong>pricing_page_viewed</strong>`, "event");
+  };
+  track("pricing_page_viewed", props);
+  logEvent("pricing_page_viewed", props);
 });
 
 // Show initial connection state
-updateConnectionStatus(getConnectionState());
+const initialState = getConnectionState();
+statusDot.className = `status-dot status-${initialState}`;
+statusText.textContent = initialState.charAt(0).toUpperCase() + initialState.slice(1);

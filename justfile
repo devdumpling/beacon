@@ -78,6 +78,10 @@ test-dashboard:
 test-integration:
     npx tsx scripts/integration-test.ts
 
+# Typecheck example apps
+typecheck-examples:
+    pnpm --filter example-vanilla typecheck
+
 # ─────────────────────────────────────────────────────────────
 # Lint & Format
 # ─────────────────────────────────────────────────────────────
