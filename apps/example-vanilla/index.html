@@ -16,15 +16,57 @@
         </div>
       </header>
 
-      <section class="controls">
-        <h2>SDK Actions</h2>
-        <div class="button-group">
-          <button id="btn-track">Track Event</button>
-          <button id="btn-identify">Identify User</button>
-          <button id="btn-page">Track Page View</button>
+      <!-- User State Display -->
+      <section class="user-state">
+        <div class="user-info" id="user-info">
+          <span class="user-label">Tracking as:</span>
+          <span class="user-value" id="user-display">Anonymous</span>
         </div>
       </section>
 
+      <!-- Auth Section - changes based on login state -->
+      <section class="auth" id="auth-section">
+        <h2>Sign In</h2>
+        <p class="auth-description">
+          Events are tracked anonymously. Sign in to link your activity to your
+          account.
+        </p>
+        <form id="login-form" class="login-form">
+          <input
+            type="text"
+            id="username-input"
+            placeholder="Enter username (e.g., john@example.com)"
+            required
+          />
+          <button type="submit">Sign In</button>
+        </form>
+      </section>
+
+      <!-- Logged-in state (hidden by default) -->
+      <section class="auth logged-in" id="logged-in-section" style="display: none">
+        <h2>Welcome back!</h2>
+        <p class="auth-description">
+          You're signed in as <strong id="logged-in-username"></strong>. All
+          events are now linked to your account.
+        </p>
+        <button id="logout-btn" class="secondary">Sign Out</button>
+      </section>
+
+      <!-- Actions -->
+      <section class="actions">
+        <h2>Interact with the App</h2>
+        <p class="section-description">
+          These buttons simulate real user interactions. Watch the event log to
+          see what gets tracked.
+        </p>
+        <div class="button-group">
+          <button id="btn-add-cart">Add to Cart</button>
+          <button id="btn-checkout">Start Checkout</button>
+          <button id="btn-upgrade">View Pricing</button>
+        </div>
+      </section>
+
+      <!-- Feature Flags -->
       <section class="flags">
         <h2>Feature Flags</h2>
         <div id="flags-container">
@@ -32,8 +74,12 @@
         </div>
       </section>
 
+      <!-- Event Log -->
       <section class="log">
         <h2>Event Log</h2>
+        <p class="section-description">
+          Real-time view of events being sent to Beacon.
+        </p>
         <div id="event-log"></div>
       </section>
     </div>

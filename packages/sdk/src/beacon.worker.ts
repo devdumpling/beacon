@@ -153,12 +153,17 @@ self.onmessage = (e) => {
   }
 
   if (t === "e") {
-    send({
+    const msg: QueuedMessage = {
       type: "event",
       event: e.data.event,
       // API expects props as a JSON string
       props: JSON.stringify(e.data.props || {}),
       ts: e.data.ts,
-    });
+    };
+    // Include userId if user has been identified
+    if (userId) {
+      msg.userId = userId;
+    }
+    send(msg);
   }
 };

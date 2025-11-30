@@ -27,7 +27,7 @@ header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
   padding-bottom: 1rem;
   border-bottom: 1px solid #334155;
 }
@@ -41,7 +41,7 @@ h2 {
   font-size: 1rem;
   font-weight: 500;
   color: #94a3b8;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
 }
 
 /* Connection Status */
@@ -86,12 +86,77 @@ h2 {
   }
 }
 
+/* User State */
+.user-state {
+  background: #1e293b;
+  border-radius: 0.5rem;
+  padding: 1rem 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.user-label {
+  color: #64748b;
+  font-size: 0.875rem;
+}
+
+.user-value {
+  font-weight: 500;
+  color: #94a3b8;
+}
+
+.user-value.identified {
+  color: #22c55e;
+}
+
 /* Sections */
 section {
   background: #1e293b;
   border-radius: 0.5rem;
   padding: 1.5rem;
   margin-bottom: 1.5rem;
+}
+
+.section-description {
+  color: #64748b;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+/* Auth Section */
+.auth-description {
+  color: #64748b;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+.login-form {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.login-form input {
+  flex: 1;
+  padding: 0.625rem 1rem;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 0.375rem;
+  color: #e2e8f0;
+  font-size: 0.875rem;
+}
+
+.login-form input::placeholder {
+  color: #64748b;
+}
+
+.login-form input:focus {
+  outline: none;
+  border-color: #3b82f6;
 }
 
 /* Buttons */
@@ -119,6 +184,17 @@ button:hover {
 
 button:active {
   background: #1d4ed8;
+}
+
+button.secondary {
+  background: transparent;
+  border: 1px solid #475569;
+  color: #94a3b8;
+}
+
+button.secondary:hover {
+  background: #334155;
+  border-color: #475569;
 }
 
 /* Feature Flags */
@@ -198,6 +274,15 @@ button:active {
   color: #fca5a5;
 }
 
+.log-event {
+  color: #93c5fd;
+}
+
 .log-entry strong {
   color: #60a5fa;
+}
+
+.log-detail {
+  color: #64748b;
+  font-size: 0.75rem;
 }
