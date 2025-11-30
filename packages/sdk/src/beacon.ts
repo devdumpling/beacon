@@ -100,7 +100,7 @@ export function init(config: BeaconConfig): void {
   connectionChangeCallback = config.onConnectionChange;
   errorCallback = config.onError;
 
-  worker = new Worker(new URL("./beacon.worker.ts", import.meta.url), {
+  worker = new Worker(new URL("./beacon.worker.js", import.meta.url), {
     type: "module",
   });
 
