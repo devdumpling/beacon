@@ -606,6 +606,273 @@ async function eventTests() {
 }
 
 // ─────────────────────────────────────────────────────────────
+// Identity Management Tests
+// ─────────────────────────────────────────────────────────────
+
+async function identityTests() {
+  console.log("\n" + yellow("Identity Management"));
+
+  await test("Re-identify with same user updates traits", async () => {
+    const sessionId = crypto.randomUUID();
+    const anonId = crypto.randomUUID();
+    const userId = "reidentify-user-" + Date.now();
+
+    const ws = await connectWs({
+      key: TEST_API_KEY,
+      session: sessionId,
+      anon: anonId,
+    });
+
+    // First identify
+    ws.send(
+      JSON.stringify({
+        type: "identify",
+        userId: userId,
+        traits: JSON.stringify({ plan: "free" }),
+      }),
+    );
+    await new Promise((r) => setTimeout(r, 200));
+
+    // Second identify with updated traits
+    ws.send(
+      JSON.stringify({
+        type: "identify",
+        userId: userId,
+        traits: JSON.stringify({ plan: "pro", upgraded: true }),
+      }),
+    );
+    await new Promise((r) => setTimeout(r, 200));
+
+    const user = await queryUser(TEST_PROJECT_ID, anonId);
+    assert(user !== null, "User should exist");
+    assertEqual(user!.traits.plan, "pro", "Traits should be updated");
+    assertEqual(user!.traits.upgraded, true, "New trait should be added");
+
+    ws.close();
+  });
+
+  await test("Different user_id updates anon mapping", async () => {
+    const sessionId = crypto.randomUUID();
+    const anonId = crypto.randomUUID();
+    const firstUserId = "first-user-" + Date.now();
+    const secondUserId = "second-user-" + Date.now();
+
+    const ws = await connectWs({
+      key: TEST_API_KEY,
+      session: sessionId,
+      anon: anonId,
+    });
+
+    // First identify
+    ws.send(
+      JSON.stringify({
+        type: "identify",
+        userId: firstUserId,
+        traits: "{}",
+      }),
+    );
+    await new Promise((r) => setTimeout(r, 200));
+
+    // Second identify with different user
+    ws.send(
+      JSON.stringify({
+        type: "identify",
+        userId: secondUserId,
+        traits: "{}",
+      }),
+    );
+    await new Promise((r) => setTimeout(r, 200));
+
+    // Session should have second user
+    const session = await querySession(sessionId);
+    assertEqual(session!.user_id, secondUserId, "Session should have second user");
+
+    // Users table should map to second user (upsert on anon_id)
+    const user = await queryUser(TEST_PROJECT_ID, anonId);
+    assertEqual(user!.user_id, secondUserId, "User mapping should be to second user");
+
+    ws.close();
+  });
+
+  await test("Events track user switch correctly", async () => {
+    const sessionId = crypto.randomUUID();
+    const anonId = crypto.randomUUID();
+    const firstUserId = "switch-first-" + Date.now();
+    const secondUserId = "switch-second-" + Date.now();
+
+    const ws = await connectWs({
+      key: TEST_API_KEY,
+      session: sessionId,
+      anon: anonId,
+    });
+
+    // Event as anonymous
+    ws.send(
+      JSON.stringify({
+        type: "event",
+        event: "anonymous_event",
+        props: "{}",
+        ts: Date.now(),
+      }),
+    );
+
+    // Identify as first user
+    ws.send(
+      JSON.stringify({
+        type: "identify",
+        userId: firstUserId,
+        traits: "{}",
+      }),
+    );
+    await new Promise((r) => setTimeout(r, 100));
+
+    // Event as first user
+    ws.send(
+      JSON.stringify({
+        type: "event",
+        event: "first_user_event",
+        props: "{}",
+        ts: Date.now(),
+      }),
+    );
+
+    // Identify as second user (user switch)
+    ws.send(
+      JSON.stringify({
+        type: "identify",
+        userId: secondUserId,
+        traits: "{}",
+      }),
+    );
+    await new Promise((r) => setTimeout(r, 100));
+
+    // Event as second user
+    ws.send(
+      JSON.stringify({
+        type: "event",
+        event: "second_user_event",
+        props: "{}",
+        ts: Date.now(),
+      }),
+    );
+
+    // Wait for flush
+    await new Promise((r) => setTimeout(r, 5500));
+    ws.close();
+
+    const events = await queryEvents(sessionId);
+    const anonEvent = events.find((e) => e.event_name === "anonymous_event");
+    const firstEvent = events.find((e) => e.event_name === "first_user_event");
+    const secondEvent = events.find((e) => e.event_name === "second_user_event");
+
+    assert(anonEvent !== undefined, "Anonymous event should exist");
+    assert(firstEvent !== undefined, "First user event should exist");
+    assert(secondEvent !== undefined, "Second user event should exist");
+
+    assertEqual(anonEvent!.user_id, null, "Anonymous event should have null user_id");
+    assertEqual(
+      firstEvent!.user_id,
+      firstUserId,
+      "First user event should have first user_id",
+    );
+    assertEqual(
+      secondEvent!.user_id,
+      secondUserId,
+      "Second user event should have second user_id",
+    );
+  });
+
+  await test("Multiple sessions with same anon_id share user mapping", async () => {
+    const anonId = crypto.randomUUID();
+    const session1Id = crypto.randomUUID();
+    const session2Id = crypto.randomUUID();
+    const userId = "multi-session-user-" + Date.now();
+
+    // First session - identify user
+    const ws1 = await connectWs({
+      key: TEST_API_KEY,
+      session: session1Id,
+      anon: anonId,
+    });
+
+    ws1.send(
+      JSON.stringify({
+        type: "identify",
+        userId: userId,
+        traits: JSON.stringify({ name: "Test" }),
+      }),
+    );
+    await new Promise((r) => setTimeout(r, 200));
+    ws1.close();
+
+    // Second session with same anon_id - should find user mapping
+    const ws2 = await connectWs({
+      key: TEST_API_KEY,
+      session: session2Id,
+      anon: anonId,
+    });
+    await new Promise((r) => setTimeout(r, 100));
+
+    // User record should still exist with the mapping
+    const user = await queryUser(TEST_PROJECT_ID, anonId);
+    assert(user !== null, "User mapping should persist across sessions");
+    assertEqual(user!.user_id, userId);
+    assertEqual(user!.traits.name, "Test");
+
+    ws2.close();
+  });
+
+  await test("All events have anon_id regardless of identify state", async () => {
+    const sessionId = crypto.randomUUID();
+    const anonId = crypto.randomUUID();
+
+    const ws = await connectWs({
+      key: TEST_API_KEY,
+      session: sessionId,
+      anon: anonId,
+    });
+
+    // Events before and after identify
+    ws.send(
+      JSON.stringify({
+        type: "event",
+        event: "pre_identify",
+        props: "{}",
+        ts: Date.now(),
+      }),
+    );
+
+    ws.send(
+      JSON.stringify({
+        type: "identify",
+        userId: "user-anon-test",
+        traits: "{}",
+      }),
+    );
+    await new Promise((r) => setTimeout(r, 100));
+
+    ws.send(
+      JSON.stringify({
+        type: "event",
+        event: "post_identify",
+        props: "{}",
+        ts: Date.now(),
+      }),
+    );
+
+    await new Promise((r) => setTimeout(r, 5500));
+    ws.close();
+
+    const events = await queryEvents(sessionId);
+
+    // Both events should have anon_id
+    for (const event of events) {
+      assertEqual(event.anon_id, anonId, `Event ${event.event_name} should have anon_id`);
+    }
+  });
+}
+
+// ─────────────────────────────────────────────────────────────
 // WebSocket Edge Cases
 // ─────────────────────────────────────────────────────────────
 
@@ -760,6 +1027,7 @@ async function main() {
   await websocketTests();
   await sessionTests();
   await eventTests();
+  await identityTests();
   await edgeCaseTests();
 
   // Cleanup
