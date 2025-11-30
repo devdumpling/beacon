@@ -6,22 +6,12 @@ import {
   getConnectionState,
   type ConnectionState,
 } from "@beacon/sdk";
-import "./style.css";
-
-// ============================================================================
-// Types
-// ============================================================================
-
-type LogType = "event" | "identify" | "page" | "connection" | "flags" | "error" | "info";
-type LogDirection = "sent" | "received" | "system";
-
-interface LogEntry {
-  type: LogType;
-  message: string;
-  direction: LogDirection;
-  payload?: Record<string, unknown>;
-  timestamp: Date;
-}
+import {
+  type LogEntry,
+  LOG_ICONS,
+  syntaxHighlight,
+} from "@beacon/example-shared";
+import "@beacon/example-shared/style.css";
 
 // ============================================================================
 // DOM Elements
@@ -36,7 +26,9 @@ const authSection = document.getElementById("auth-section")!;
 const loggedInSection = document.getElementById("logged-in-section")!;
 const loggedInUsername = document.getElementById("logged-in-username")!;
 const loginForm = document.getElementById("login-form") as HTMLFormElement;
-const usernameInput = document.getElementById("username-input") as HTMLInputElement;
+const usernameInput = document.getElementById(
+  "username-input",
+) as HTMLInputElement;
 const logoutBtn = document.getElementById("logout-btn")!;
 
 const btnAddCart = document.getElementById("btn-add-cart")!;
@@ -69,55 +61,17 @@ function setCurrentUser(userId: string | null): void {
 }
 
 // ============================================================================
-// JSON Syntax Highlighting
-// ============================================================================
-
-function syntaxHighlight(obj: unknown): string {
-  const json = JSON.stringify(obj, null, 2);
-  return json.replace(
-    /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
-    (match) => {
-      let cls = "number";
-      if (/^"/.test(match)) {
-        if (/:$/.test(match)) {
-          cls = "key";
-          match = match.slice(0, -1);
-          return `<span class="${cls}">${match}</span>:`;
-        } else {
-          cls = "string";
-        }
-      } else if (/true|false/.test(match)) {
-        cls = "boolean";
-      } else if (/null/.test(match)) {
-        cls = "null";
-      }
-      return `<span class="${cls}">${match}</span>`;
-    }
-  );
-}
-
-// ============================================================================
 // Event Log
 // ============================================================================
 
-const icons: Record<LogType, string> = {
-  event: "◆",
-  identify: "●",
-  page: "◇",
-  connection: "◈",
-  flags: "⚑",
-  error: "✕",
-  info: "○",
-};
-
-function log(entry: LogEntry) {
+function log(entry: Omit<LogEntry, "id">) {
   const emptyState = eventLog.querySelector(".log-empty");
   if (emptyState) {
     emptyState.remove();
   }
 
   const time = entry.timestamp.toLocaleTimeString();
-  const icon = icons[entry.type];
+  const icon = LOG_ICONS[entry.type];
   const hasPayload = entry.payload !== undefined;
 
   // Only use details element if there's a payload to show
@@ -125,9 +79,10 @@ function log(entry: LogEntry) {
     const el = document.createElement("details");
     el.className = `log-entry type-${entry.type} expandable`;
 
-    const badge = entry.direction !== "system"
-      ? `<span class="log-badge ${entry.direction}">${entry.direction}</span>`
-      : "";
+    const badge =
+      entry.direction !== "system"
+        ? `<span class="log-badge ${entry.direction}">${entry.direction}</span>`
+        : "";
 
     el.innerHTML = `
       <summary>
@@ -284,7 +239,8 @@ function updateAuthUI(userId: string | null) {
 
 function updateFlags(flags: Record<string, boolean>) {
   if (Object.keys(flags).length === 0) {
-    flagsContainer.innerHTML = '<p class="placeholder">No flags received yet</p>';
+    flagsContainer.innerHTML =
+      '<p class="placeholder">No flags received yet</p>';
     return;
   }
 
@@ -295,7 +251,7 @@ function updateFlags(flags: Record<string, boolean>) {
         <span class="flag-name">${key}</span>
         <span class="flag-value ${value ? "enabled" : "disabled"}">${value}</span>
       </div>
-    `
+    `,
     )
     .join("");
 }
@@ -309,7 +265,8 @@ function showCodePreview(code: string) {
 }
 
 function hideCodePreview() {
-  codePreview.innerHTML = '<span class="code-preview-label">Hover a button to see the code</span>';
+  codePreview.innerHTML =
+    '<span class="code-preview-label">Hover a button to see the code</span>';
 }
 
 // ============================================================================
@@ -399,7 +356,8 @@ logoutBtn.addEventListener("click", handleLogout);
 
 // Clear log button
 clearLogBtn.addEventListener("click", () => {
-  eventLog.innerHTML = '<div class="log-empty">Events will appear here as they\'re sent...</div>';
+  eventLog.innerHTML =
+    '<div class="log-empty">Events will appear here as they\'re sent...</div>';
 });
 
 // Action buttons with code preview
@@ -447,4 +405,5 @@ btnUpgrade.addEventListener("click", () => {
 // Show initial connection state
 const initialState = getConnectionState();
 statusDot.className = `status-dot status-${initialState}`;
-statusText.textContent = initialState.charAt(0).toUpperCase() + initialState.slice(1);
+statusText.textContent =
+  initialState.charAt(0).toUpperCase() + initialState.slice(1);

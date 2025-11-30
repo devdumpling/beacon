@@ -28,6 +28,7 @@ just dev
 ```
 
 Services will start on:
+
 - **API**: http://localhost:4000
 - **Dashboard**: http://localhost:5173
 
@@ -117,26 +118,26 @@ RETURNING api_key;
 
 ## What's Working
 
-| Feature | Status |
-|---------|--------|
-| Event tracking | ✅ Working |
-| Page views | ✅ Working |
-| User identification | ✅ Working |
-| Session management | ✅ Working |
-| Feature flags (read) | ✅ Working |
+| Feature                | Status     |
+| ---------------------- | ---------- |
+| Event tracking         | ✅ Working |
+| Page views             | ✅ Working |
+| User identification    | ✅ Working |
+| Session management     | ✅ Working |
+| Feature flags (read)   | ✅ Working |
 | WebSocket reconnection | ✅ Working |
-| React hooks | ✅ Working |
+| React hooks            | ✅ Working |
 
 ## What's WIP
 
-| Feature | Status |
-|---------|--------|
-| npm package publishing | 🚧 Not published |
-| Dashboard authentication | 🚧 Open access |
-| Flag management UI | 🚧 Basic |
-| Analytics visualizations | 🚧 Basic |
-| Production deployment guide | 🚧 Coming soon |
-| Rate limiting | 🚧 Not implemented |
+| Feature                     | Status             |
+| --------------------------- | ------------------ |
+| npm package publishing      | 🚧 Not published   |
+| Dashboard authentication    | 🚧 Open access     |
+| Flag management UI          | 🚧 Basic           |
+| Analytics visualizations    | 🚧 Basic           |
+| Production deployment guide | 🚧 Coming soon     |
+| Rate limiting               | 🚧 Not implemented |
 
 ---
 

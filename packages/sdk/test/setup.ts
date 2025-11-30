@@ -20,6 +20,7 @@ vi.stubGlobal("URL", MockURL);
 class MockWorker {
   onmessage: ((e: MessageEvent) => void) | null = null;
   private messageHandler: ((data: unknown) => void) | null = null;
+  terminated = false;
 
   constructor(_url: string | URL, _options?: WorkerOptions) {
     // Store reference for tests
@@ -45,7 +46,9 @@ class MockWorker {
     this.messageHandler = handler;
   }
 
-  terminate() {}
+  terminate() {
+    this.terminated = true;
+  }
 }
 
 // Mock WebSocket
@@ -87,7 +90,7 @@ class MockWebSocket {
   simulateMessage(data: unknown) {
     if (this.onmessage) {
       this.onmessage(
-        new MessageEvent("message", { data: JSON.stringify(data) })
+        new MessageEvent("message", { data: JSON.stringify(data) }),
       );
     }
   }

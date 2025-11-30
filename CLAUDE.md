@@ -25,20 +25,21 @@ Client App → @beacon/sdk (Web Worker) → WebSocket → Gleam API (BEAM) → P
 
 ## Project Layout
 
-| Directory | Purpose |
-|-----------|---------|
-| `apps/api/` | Gleam backend (Mist HTTP/WS, actor services) |
-| `apps/dashboard/` | SvelteKit frontend |
-| `apps/example-vanilla/` | Vanilla JS example app |
-| `packages/sdk/` | Client SDK (`@beacon/sdk`) |
-| `docs/` | Project documentation |
-| `infra/migrations/` | dbmate SQL migrations |
+| Directory               | Purpose                                      |
+| ----------------------- | -------------------------------------------- |
+| `apps/api/`             | Gleam backend (Mist HTTP/WS, actor services) |
+| `apps/dashboard/`       | SvelteKit frontend                           |
+| `apps/example-vanilla/` | Vanilla JS example app                       |
+| `packages/sdk/`         | Client SDK (`@beacon/sdk`)                   |
+| `docs/`                 | Project documentation                        |
+| `infra/migrations/`     | dbmate SQL migrations                        |
 
 ## Key Patterns
 
 ### Gleam (v1.x with gleam_otp 1.x, mist 5.x, pog 4.x)
 
 **Actor:**
+
 ```gleam
 actor.new(initial_state)
 |> actor.on_message(fn(state, msg) -> actor.Next(State, Message))
@@ -46,6 +47,7 @@ actor.new(initial_state)
 ```
 
 **Pog queries:**
+
 ```gleam
 pog.query("SELECT ...")
 |> pog.parameter(pog.text(value))
@@ -62,7 +64,9 @@ init({ url: "https://beacon.example.com", apiKey: "bk_your_api_key" });
 track("button_clicked", { button_id: "signup" });
 identify("user_123", { plan: "pro" });
 page();
-if (flag("new_feature")) { /* ... */ }
+if (flag("new_feature")) {
+  /* ... */
+}
 ```
 
 ### WebSocket Protocol
@@ -70,6 +74,7 @@ if (flag("new_feature")) { /* ... */ }
 Connect: `ws://localhost:4000/ws?key=API_KEY&session=ID&anon=ID`
 
 Messages (JSON) - **props and traits must be JSON strings**:
+
 ```json
 {"type": "event", "event": "name", "props": "{\"key\":\"value\"}", "ts": 123}
 {"type": "identify", "userId": "123", "traits": "{\"name\":\"Jane\"}"}
@@ -95,6 +100,7 @@ just test-sdk          # SDK unit tests (40 tests)
 ## Environment
 
 Required `.env`:
+
 ```
 DATABASE_URL=postgres://beacon:beacon@localhost:5432/beacon?sslmode=disable
 PORT=4000

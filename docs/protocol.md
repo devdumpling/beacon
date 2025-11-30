@@ -12,11 +12,11 @@ ws://host:port/ws?key=API_KEY&session=SESSION_ID&anon=ANON_ID
 
 ### Query Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `key` | string | Project API key (validated against database) |
-| `session` | UUID | Client-generated session identifier |
-| `anon` | UUID | Client-generated anonymous user identifier |
+| Parameter | Type   | Description                                  |
+| --------- | ------ | -------------------------------------------- |
+| `key`     | string | Project API key (validated against database) |
+| `session` | UUID   | Client-generated session identifier          |
+| `anon`    | UUID   | Client-generated anonymous user identifier   |
 
 ### Connection Lifecycle
 
@@ -42,12 +42,12 @@ Track a custom event with optional properties.
 }
 ```
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `type` | string | Yes | Must be `"event"` |
-| `event` | string | Yes | Event name |
-| `props` | string | No | JSON-encoded properties object |
-| `ts` | integer | No | Unix timestamp in milliseconds |
+| Field   | Type    | Required | Description                    |
+| ------- | ------- | -------- | ------------------------------ |
+| `type`  | string  | Yes      | Must be `"event"`              |
+| `event` | string  | Yes      | Event name                     |
+| `props` | string  | No       | JSON-encoded properties object |
+| `ts`    | integer | No       | Unix timestamp in milliseconds |
 
 **Note:** The `props` field must be a JSON-encoded string, not a raw object.
 
@@ -63,11 +63,11 @@ Associate the session with a user identity.
 }
 ```
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `type` | string | Yes | Must be `"identify"` |
-| `userId` | string | Yes | User identifier from your system |
-| `traits` | string | No | JSON-encoded user properties |
+| Field    | Type   | Required | Description                      |
+| -------- | ------ | -------- | -------------------------------- |
+| `type`   | string | Yes      | Must be `"identify"`             |
+| `userId` | string | Yes      | User identifier from your system |
+| `traits` | string | No       | JSON-encoded user properties     |
 
 **Note:** The `traits` field must be a JSON-encoded string, not a raw object.
 
@@ -106,9 +106,9 @@ Pushed when feature flags change for the project.
 }
 ```
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `type` | string | Always `"flags"` |
+| Field   | Type   | Description                                   |
+| ------- | ------ | --------------------------------------------- |
+| `type`  | string | Always `"flags"`                              |
 | `flags` | object | Key-value map of flag names to boolean values |
 
 ### Pong Response
@@ -169,16 +169,21 @@ Client                          Server
 Invalid JSON or missing required fields are logged but do not close the connection:
 
 ```json
-{"level":"warn","msg":"Failed to parse WebSocket message","session_id":"...","raw_message":"..."}
+{
+  "level": "warn",
+  "msg": "Failed to parse WebSocket message",
+  "session_id": "...",
+  "raw_message": "..."
+}
 ```
 
 ### Connection Errors
 
-| HTTP Status | Cause |
-|-------------|-------|
-| 400 | Missing required query parameter |
-| 401 | Invalid API key |
-| 500 | Database error during validation |
+| HTTP Status | Cause                            |
+| ----------- | -------------------------------- |
+| 400         | Missing required query parameter |
+| 401         | Invalid API key                  |
+| 500         | Database error during validation |
 
 ### Reconnection
 

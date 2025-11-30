@@ -41,11 +41,11 @@ Establishes a WebSocket connection for real-time event streaming and flag update
 
 **Query Parameters:**
 
-| Parameter | Required | Description |
-|-----------|----------|-------------|
-| `key` | Yes | Project API key (e.g., `bk_abc123...`) |
-| `session` | Yes | Client-generated session UUID |
-| `anon` | Yes | Client-generated anonymous user UUID |
+| Parameter | Required | Description                            |
+| --------- | -------- | -------------------------------------- |
+| `key`     | Yes      | Project API key (e.g., `bk_abc123...`) |
+| `session` | Yes      | Client-generated session UUID          |
+| `anon`    | Yes      | Client-generated anonymous user UUID   |
 
 **Error Responses:**
 
@@ -85,10 +85,10 @@ The server runs on the BEAM virtual machine, providing:
 
 Environment variables:
 
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `DATABASE_URL` | Yes | - | PostgreSQL connection URL |
-| `PORT` | No | 4000 | HTTP/WebSocket server port |
+| Variable       | Required | Default | Description                |
+| -------------- | -------- | ------- | -------------------------- |
+| `DATABASE_URL` | Yes      | -       | PostgreSQL connection URL  |
+| `PORT`         | No       | 4000    | HTTP/WebSocket server port |
 
 ## Database Schema
 
@@ -105,7 +105,12 @@ See the migration files in `infra/migrations/` for the complete schema. Key tabl
 The API uses structured JSON logging for all errors:
 
 ```json
-{"level":"error","msg":"Failed to parse WebSocket message","session_id":"abc123","raw_message":"..."}
+{
+  "level": "error",
+  "msg": "Failed to parse WebSocket message",
+  "session_id": "abc123",
+  "raw_message": "..."
+}
 ```
 
 Errors are logged but do not terminate connections. The server prioritizes availability and will:

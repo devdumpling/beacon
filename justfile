@@ -32,6 +32,10 @@ dev-dashboard:
 dev-example-vanilla:
     pnpm --filter example-vanilla dev
 
+# Start React example app
+dev-example-react:
+    pnpm --filter example-react dev
+
 # ─────────────────────────────────────────────────────────────
 # Build
 # ─────────────────────────────────────────────────────────────
@@ -81,6 +85,7 @@ test-integration:
 # Typecheck example apps
 typecheck-examples:
     pnpm --filter example-vanilla typecheck
+    pnpm --filter example-react typecheck
 
 # ─────────────────────────────────────────────────────────────
 # Lint & Format

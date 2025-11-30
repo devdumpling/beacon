@@ -54,7 +54,11 @@ interface BeaconConfig {
   onError?: (error: string) => void;
 }
 
-type ConnectionState = "connecting" | "connected" | "disconnected" | "reconnecting";
+type ConnectionState =
+  | "connecting"
+  | "connected"
+  | "disconnected"
+  | "reconnecting";
 ```
 
 **Example:**
@@ -113,6 +117,7 @@ identify("user_12345", {
 Track a page view with automatic URL capture.
 
 Automatically captures:
+
 - `url` - Full URL (`window.location.href`)
 - `path` - Path only (`window.location.pathname`)
 - `ref` - Referrer (`document.referrer`)
@@ -206,24 +211,24 @@ function MyComponent() {
 
 ### Available React Exports
 
-| Export | Type | Description |
-|--------|------|-------------|
-| `BeaconProvider` | Component | Initializes SDK, wrap app with this |
-| `useFlag(key, fallback?)` | Hook | Subscribe to a single flag |
-| `useFlags()` | Hook | Subscribe to all flags |
-| `usePageView(deps?)` | Hook | Track page view on mount |
-| `useTrack()` | Hook | Returns the `track` function |
-| `track`, `identify`, `page` | Function | Re-exported from core SDK |
+| Export                      | Type      | Description                         |
+| --------------------------- | --------- | ----------------------------------- |
+| `BeaconProvider`            | Component | Initializes SDK, wrap app with this |
+| `useFlag(key, fallback?)`   | Hook      | Subscribe to a single flag          |
+| `useFlags()`                | Hook      | Subscribe to all flags              |
+| `usePageView(deps?)`        | Hook      | Track page view on mount            |
+| `useTrack()`                | Hook      | Returns the `track` function        |
+| `track`, `identify`, `page` | Function  | Re-exported from core SDK           |
 
 ## Browser Events
 
 The SDK dispatches custom events on `window` for integration flexibility:
 
-| Event | Detail | Description |
-|-------|--------|-------------|
-| `beacon:flags` | `Record<string, boolean>` | Fired when flags are updated |
-| `beacon:connection` | `ConnectionState` | Fired when connection state changes |
-| `beacon:error` | `string` | Fired when an error occurs |
+| Event               | Detail                    | Description                         |
+| ------------------- | ------------------------- | ----------------------------------- |
+| `beacon:flags`      | `Record<string, boolean>` | Fired when flags are updated        |
+| `beacon:connection` | `ConnectionState`         | Fired when connection state changes |
+| `beacon:error`      | `string`                  | Fired when an error occurs          |
 
 ```typescript
 window.addEventListener("beacon:flags", (e) => {
@@ -252,6 +257,7 @@ Main Thread              Web Worker              Server
 ### Event Queuing
 
 Events are queued until:
+
 1. The worker signals "ready"
 2. The WebSocket connection is established
 
@@ -260,6 +266,7 @@ Queued events are sent in order once the connection is ready.
 ### Reconnection
 
 The SDK automatically reconnects with exponential backoff:
+
 - Initial delay: 1 second
 - Maximum delay: 30 seconds
 - Backoff multiplier: 2x

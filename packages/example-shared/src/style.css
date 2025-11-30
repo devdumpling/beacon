@@ -149,8 +149,13 @@ body {
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
 }
 
 /* ============================================================================
@@ -267,7 +272,9 @@ button {
   font-size: 0.8125rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.15s, transform 0.1s;
+  transition:
+    background 0.15s,
+    transform 0.1s;
 }
 
 button:hover {
@@ -614,13 +621,27 @@ button:active {
 }
 
 /* Log Entry Types - Icon colors */
-.log-entry.type-event .log-icon { color: var(--rp-iris); }
-.log-entry.type-identify .log-icon { color: var(--rp-rose); }
-.log-entry.type-page .log-icon { color: var(--rp-foam); }
-.log-entry.type-connection .log-icon { color: var(--rp-gold); }
-.log-entry.type-flags .log-icon { color: var(--rp-pine); }
-.log-entry.type-error .log-icon { color: var(--rp-love); }
-.log-entry.type-info .log-icon { color: var(--rp-muted); }
+.log-entry.type-event .log-icon {
+  color: var(--rp-iris);
+}
+.log-entry.type-identify .log-icon {
+  color: var(--rp-rose);
+}
+.log-entry.type-page .log-icon {
+  color: var(--rp-foam);
+}
+.log-entry.type-connection .log-icon {
+  color: var(--rp-gold);
+}
+.log-entry.type-flags .log-icon {
+  color: var(--rp-pine);
+}
+.log-entry.type-error .log-icon {
+  color: var(--rp-love);
+}
+.log-entry.type-info .log-icon {
+  color: var(--rp-muted);
+}
 
 /* Log Payload */
 .log-payload {
