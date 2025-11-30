@@ -53,12 +53,14 @@ const eventLog = document.getElementById("event-log")!;
 // ============================================================================
 
 const STORAGE_KEY = "beacon_example_user";
+let currentUserId: string | null = null;
 
 function getCurrentUser(): string | null {
   return sessionStorage.getItem(STORAGE_KEY);
 }
 
 function setCurrentUser(userId: string | null): void {
+  currentUserId = userId;
   if (userId) {
     sessionStorage.setItem(STORAGE_KEY, userId);
   } else {
@@ -79,13 +81,13 @@ function syntaxHighlight(obj: unknown): string {
       if (/^"/.test(match)) {
         if (/:$/.test(match)) {
           cls = "key";
-          match = match.slice(0, -1); // Remove colon for keys
+          match = match.slice(0, -1);
           return `<span class="${cls}">${match}</span>:`;
         } else {
           cls = "string";
         }
       } else if (/true|false/.test(match)) {
-        cls = "number"; // booleans same color as numbers
+        cls = "boolean";
       } else if (/null/.test(match)) {
         cls = "null";
       }
@@ -109,32 +111,45 @@ const icons: Record<LogType, string> = {
 };
 
 function log(entry: LogEntry) {
-  // Remove empty state message if present
   const emptyState = eventLog.querySelector(".log-empty");
   if (emptyState) {
     emptyState.remove();
   }
 
-  const el = document.createElement("details");
-  el.className = `log-entry type-${entry.type}`;
-
   const time = entry.timestamp.toLocaleTimeString();
   const icon = icons[entry.type];
-  const badge = entry.direction !== "system"
-    ? `<span class="log-badge ${entry.direction}">${entry.direction}</span>`
-    : "";
+  const hasPayload = entry.payload !== undefined;
 
-  el.innerHTML = `
-    <summary>
+  // Only use details element if there's a payload to show
+  if (hasPayload) {
+    const el = document.createElement("details");
+    el.className = `log-entry type-${entry.type} expandable`;
+
+    const badge = entry.direction !== "system"
+      ? `<span class="log-badge ${entry.direction}">${entry.direction}</span>`
+      : "";
+
+    el.innerHTML = `
+      <summary>
+        <span class="log-time">${time}</span>
+        <span class="log-icon">${icon}</span>
+        <span class="log-message">${entry.message}</span>
+        ${badge}
+      </summary>
+      <div class="log-payload"><pre>${syntaxHighlight(entry.payload)}</pre></div>
+    `;
+    eventLog.insertBefore(el, eventLog.firstChild);
+  } else {
+    const el = document.createElement("div");
+    el.className = `log-entry type-${entry.type}`;
+
+    el.innerHTML = `
       <span class="log-time">${time}</span>
       <span class="log-icon">${icon}</span>
       <span class="log-message">${entry.message}</span>
-      ${badge}
-    </summary>
-    ${entry.payload ? `<div class="log-payload"><pre>${syntaxHighlight(entry.payload)}</pre></div>` : ""}
-  `;
-
-  eventLog.insertBefore(el, eventLog.firstChild);
+    `;
+    eventLog.insertBefore(el, eventLog.firstChild);
+  }
 
   // Keep only last 100 entries
   while (eventLog.children.length > 100) {
@@ -143,36 +158,64 @@ function log(entry: LogEntry) {
 }
 
 function logEvent(eventName: string, props?: Record<string, unknown>) {
+  // Build payload matching what the SDK actually sends
+  const payload: Record<string, unknown> = {
+    type: "event",
+    event: eventName,
+    props: JSON.stringify(props || {}),
+    ts: Date.now(),
+  };
+  // SDK includes userId in events if user is identified
+  if (currentUserId) {
+    payload.userId = currentUserId;
+  }
+
   log({
     type: "event",
     message: `<strong>${eventName}</strong>`,
     direction: "sent",
-    payload: { type: "event", event: eventName, props, ts: Date.now() },
+    payload,
     timestamp: new Date(),
   });
 }
 
 function logIdentify(userId: string, traits?: Record<string, unknown>) {
+  // Match what the SDK actually sends - traits are stringified
   log({
     type: "identify",
     message: `Identified as <strong>${userId}</strong>`,
     direction: "sent",
-    payload: { type: "identify", userId, traits },
+    payload: {
+      type: "identify",
+      userId: userId,
+      traits: JSON.stringify(traits || {}),
+    },
     timestamp: new Date(),
   });
 }
 
 function logPage(props?: Record<string, unknown>) {
+  const fullProps = {
+    url: window.location.href,
+    path: window.location.pathname,
+    ref: document.referrer,
+    ...props,
+  };
+  const payload: Record<string, unknown> = {
+    type: "event",
+    event: "$page",
+    props: JSON.stringify(fullProps),
+    ts: Date.now(),
+  };
+  if (currentUserId) {
+    payload.userId = currentUserId;
+  }
+
   log({
     type: "page",
     message: `<strong>$page</strong> view`,
     direction: "sent",
-    payload: {
-      type: "event",
-      event: "$page",
-      props: { url: window.location.href, path: window.location.pathname, ...props },
-      ts: Date.now()
-    },
+    payload,
     timestamp: new Date(),
   });
 }
@@ -189,9 +232,9 @@ function logConnection(state: ConnectionState) {
 function logFlags(flags: Record<string, boolean>) {
   log({
     type: "flags",
-    message: `Received <strong>${Object.keys(flags).length}</strong> flags`,
+    message: `Received <strong>${Object.keys(flags).length}</strong> flag${Object.keys(flags).length !== 1 ? "s" : ""}`,
     direction: "received",
-    payload: flags,
+    payload: { type: "flags", flags },
     timestamp: new Date(),
   });
 }
@@ -290,11 +333,11 @@ function handleLogin(username: string) {
 
 function handleLogout() {
   const previousUser = getCurrentUser();
-  setCurrentUser(null);
 
   track("user_signed_out");
   logEvent("user_signed_out");
 
+  setCurrentUser(null);
   updateAuthUI(null);
   logInfo(`Signed out from ${previousUser}`);
 }
@@ -322,6 +365,7 @@ logPage({ page_name: "home" });
 
 const existingUser = getCurrentUser();
 if (existingUser) {
+  setCurrentUser(existingUser); // Set currentUserId
   identify(existingUser);
   updateAuthUI(existingUser);
   logInfo(`Restored session for ${existingUser}`);
