@@ -46,7 +46,9 @@ class MockWebSocket {
 
   simulateMessage(data: unknown) {
     if (this.onmessage) {
-      this.onmessage(new MessageEvent("message", { data: JSON.stringify(data) }));
+      this.onmessage(
+        new MessageEvent("message", { data: JSON.stringify(data) }),
+      );
     }
   }
 

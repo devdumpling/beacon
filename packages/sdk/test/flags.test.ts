@@ -27,7 +27,7 @@ describe("flags module", () => {
       window.dispatchEvent(
         new CustomEvent("beacon:flags", {
           detail: { test_flag: true },
-        })
+        }),
       );
 
       expect(isEnabled("test_flag")).toBe(true);
@@ -39,7 +39,7 @@ describe("flags module", () => {
       window.dispatchEvent(
         new CustomEvent("beacon:flags", {
           detail: { disabled_flag: false },
-        })
+        }),
       );
 
       expect(isEnabled("disabled_flag")).toBe(false);
@@ -58,7 +58,7 @@ describe("flags module", () => {
       window.dispatchEvent(
         new CustomEvent("beacon:flags", {
           detail: { new_flag: true },
-        })
+        }),
       );
 
       expect(callback).toHaveBeenCalledTimes(1);
@@ -74,7 +74,7 @@ describe("flags module", () => {
       window.dispatchEvent(
         new CustomEvent("beacon:flags", {
           detail: { flag1: true },
-        })
+        }),
       );
 
       expect(callback).toHaveBeenCalledTimes(1);
@@ -86,7 +86,7 @@ describe("flags module", () => {
       window.dispatchEvent(
         new CustomEvent("beacon:flags", {
           detail: { flag2: true },
-        })
+        }),
       );
 
       expect(callback).toHaveBeenCalledTimes(1);
@@ -103,7 +103,7 @@ describe("flags module", () => {
       window.dispatchEvent(
         new CustomEvent("beacon:flags", {
           detail: { flag: true },
-        })
+        }),
       );
 
       expect(callback1).toHaveBeenCalledTimes(1);
@@ -119,7 +119,7 @@ describe("flags module", () => {
       window.dispatchEvent(
         new CustomEvent("beacon:flags", {
           detail: {},
-        })
+        }),
       );
 
       expect(getAll()).toEqual({});
@@ -131,7 +131,7 @@ describe("flags module", () => {
       window.dispatchEvent(
         new CustomEvent("beacon:flags", {
           detail: { flag_a: true, flag_b: false, flag_c: true },
-        })
+        }),
       );
 
       expect(getAll()).toEqual({
@@ -147,7 +147,7 @@ describe("flags module", () => {
       window.dispatchEvent(
         new CustomEvent("beacon:flags", {
           detail: { flag: true },
-        })
+        }),
       );
 
       const flags1 = getAll();

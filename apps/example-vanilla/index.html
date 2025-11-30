@@ -34,7 +34,8 @@
           <section class="card" id="auth-section">
             <h2>Sign In</h2>
             <p class="card-description">
-              Events are tracked anonymously. Sign in to link activity to your account.
+              Events are tracked anonymously. Sign in to link activity to your
+              account.
             </p>
             <form id="login-form" class="login-form">
               <input
@@ -54,7 +55,8 @@
           <section class="card" id="logged-in-section" style="display: none">
             <h2>Welcome back!</h2>
             <p class="card-description">
-              Signed in as <strong id="logged-in-username"></strong>. All events now include your user ID.
+              Signed in as <strong id="logged-in-username"></strong>. All events
+              now include your user ID.
             </p>
             <button id="logout-btn" class="btn-secondary">Sign Out</button>
             <div class="code-hint">
@@ -66,21 +68,36 @@
           <section class="card">
             <h2>Track Events</h2>
             <p class="card-description">
-              Click buttons to simulate user interactions and watch events flow to Beacon.
+              Click buttons to simulate user interactions and watch events flow
+              to Beacon.
             </p>
             <div class="action-buttons">
-              <button id="btn-add-cart" class="action-btn" data-code='track("product_added_to_cart", { product_id, price, currency })'>
+              <button
+                id="btn-add-cart"
+                class="action-btn"
+                data-code='track("product_added_to_cart", { product_id, price, currency })'
+              >
                 Add to Cart
               </button>
-              <button id="btn-checkout" class="action-btn" data-code='track("checkout_started", { cart_value, item_count })'>
+              <button
+                id="btn-checkout"
+                class="action-btn"
+                data-code='track("checkout_started", { cart_value, item_count })'
+              >
                 Start Checkout
               </button>
-              <button id="btn-upgrade" class="action-btn" data-code='track("pricing_page_viewed", { source, current_plan })'>
+              <button
+                id="btn-upgrade"
+                class="action-btn"
+                data-code='track("pricing_page_viewed", { source, current_plan })'
+              >
                 View Pricing
               </button>
             </div>
             <div class="code-preview" id="code-preview">
-              <span class="code-preview-label">Hover a button to see the code</span>
+              <span class="code-preview-label"
+                >Hover a button to see the code</span
+              >
             </div>
           </section>
 
@@ -96,7 +113,9 @@
                 <dd>Rotates after 30min inactivity.</dd>
 
                 <dt><code>user_id</code></dt>
-                <dd>Set via <code>identify()</code>. Links anonymous activity.</dd>
+                <dd>
+                  Set via <code>identify()</code>. Links anonymous activity.
+                </dd>
               </dl>
               <div class="flow-diagram">
                 <span class="flow-step">Anonymous</span>
@@ -127,7 +146,9 @@
             <button id="clear-log" class="btn-ghost">Clear</button>
           </div>
           <div class="log-container" id="event-log">
-            <div class="log-empty">Events will appear here as they're sent...</div>
+            <div class="log-empty">
+              Events will appear here as they're sent...
+            </div>
           </div>
         </div>
       </main>

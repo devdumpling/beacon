@@ -15,8 +15,7 @@ import postgres from "postgres";
 const API_URL = process.env.API_URL || "http://localhost:4000";
 const WS_URL = process.env.WS_URL || "ws://localhost:4000";
 const DATABASE_URL =
-  process.env.DATABASE_URL ||
-  "postgres://beacon:beacon@localhost:5432/beacon";
+  process.env.DATABASE_URL || "postgres://beacon:beacon@localhost:5432/beacon";
 
 // Test API key - must exist in database (created by seed/migration)
 // The integration tests require a project with this API key to exist
@@ -457,7 +456,10 @@ async function sessionTests() {
     const session2 = await querySession(sessionId);
     ws2.close();
 
-    assert(session1 !== null && session2 !== null, "Both sessions should exist");
+    assert(
+      session1 !== null && session2 !== null,
+      "Both sessions should exist",
+    );
     assert(
       session2!.last_event_at >= session1!.last_event_at,
       "last_event_at should be updated on reconnect",
@@ -498,7 +500,10 @@ async function eventTests() {
     ws.close();
 
     const events = await queryEvents(sessionId);
-    assert(events.length >= 1, `Expected at least 1 event, got ${events.length}`);
+    assert(
+      events.length >= 1,
+      `Expected at least 1 event, got ${events.length}`,
+    );
 
     const event = events.find((e) => e.event_name === eventName);
     assert(event !== undefined, `Event ${eventName} should exist`);
@@ -685,11 +690,19 @@ async function identityTests() {
 
     // Session should have second user
     const session = await querySession(sessionId);
-    assertEqual(session!.user_id, secondUserId, "Session should have second user");
+    assertEqual(
+      session!.user_id,
+      secondUserId,
+      "Session should have second user",
+    );
 
     // Users table should map to second user (upsert on anon_id)
     const user = await queryUser(TEST_PROJECT_ID, anonId);
-    assertEqual(user!.user_id, secondUserId, "User mapping should be to second user");
+    assertEqual(
+      user!.user_id,
+      secondUserId,
+      "User mapping should be to second user",
+    );
 
     ws.close();
   });
@@ -763,13 +776,19 @@ async function identityTests() {
     const events = await queryEvents(sessionId);
     const anonEvent = events.find((e) => e.event_name === "anonymous_event");
     const firstEvent = events.find((e) => e.event_name === "first_user_event");
-    const secondEvent = events.find((e) => e.event_name === "second_user_event");
+    const secondEvent = events.find(
+      (e) => e.event_name === "second_user_event",
+    );
 
     assert(anonEvent !== undefined, "Anonymous event should exist");
     assert(firstEvent !== undefined, "First user event should exist");
     assert(secondEvent !== undefined, "Second user event should exist");
 
-    assertEqual(anonEvent!.user_id, null, "Anonymous event should have null user_id");
+    assertEqual(
+      anonEvent!.user_id,
+      null,
+      "Anonymous event should have null user_id",
+    );
     assertEqual(
       firstEvent!.user_id,
       firstUserId,
@@ -867,7 +886,11 @@ async function identityTests() {
 
     // Both events should have anon_id
     for (const event of events) {
-      assertEqual(event.anon_id, anonId, `Event ${event.event_name} should have anon_id`);
+      assertEqual(
+        event.anon_id,
+        anonId,
+        `Event ${event.event_name} should have anon_id`,
+      );
     }
   });
 }

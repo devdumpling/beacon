@@ -14,12 +14,12 @@ Lightweight, privacy-first analytics platform.
 
 ## Stack
 
-| Component | Tech | Port |
-|-----------|------|------|
-| API | Gleam on BEAM (Mist HTTP/WS) | 4000 |
-| Dashboard | SvelteKit + Tailwind | 5173 |
-| Database | PostgreSQL (Docker) | 5432 |
-| Client SDK | TypeScript, Web Worker, WebSocket | - |
+| Component  | Tech                              | Port |
+| ---------- | --------------------------------- | ---- |
+| API        | Gleam on BEAM (Mist HTTP/WS)      | 4000 |
+| Dashboard  | SvelteKit + Tailwind              | 5173 |
+| Database   | PostgreSQL (Docker)               | 5432 |
+| Client SDK | TypeScript, Web Worker, WebSocket | -    |
 
 ## Quick Start
 
@@ -109,14 +109,14 @@ just lint             # Lint and format
 
 ## Documentation
 
-| Document | Description |
-|----------|-------------|
-| [Quickstart](./quickstart.md) | Get running in 5 minutes |
-| [Roadmap](./roadmap.md) | Road to alpha milestones |
-| [SDK Reference](./sdk.md) | Client SDK installation and API |
-| [API Reference](./api.md) | Server endpoints and architecture |
-| [WebSocket Protocol](./protocol.md) | Wire protocol specification |
-| [Identity Tracking](./identity.md) | User identification system |
+| Document                            | Description                       |
+| ----------------------------------- | --------------------------------- |
+| [Quickstart](./quickstart.md)       | Get running in 5 minutes          |
+| [Roadmap](./roadmap.md)             | Road to alpha milestones          |
+| [SDK Reference](./sdk.md)           | Client SDK installation and API   |
+| [API Reference](./api.md)           | Server endpoints and architecture |
+| [WebSocket Protocol](./protocol.md) | Wire protocol specification       |
+| [Identity Tracking](./identity.md)  | User identification system        |
 
 ## Environment
 

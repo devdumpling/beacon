@@ -4,11 +4,11 @@ Beacon uses a three-tier identity system to track users from first visit through
 
 ## Identity Types
 
-| ID | Generator | Persistence | Purpose |
-|----|-----------|-------------|---------|
-| `anon_id` | SDK | Per SDK init | Permanent anonymous identifier |
-| `session_id` | SDK | 30-min timeout | Groups related activity |
-| `user_id` | Your app | After identify() | Links to your user system |
+| ID           | Generator | Persistence      | Purpose                        |
+| ------------ | --------- | ---------------- | ------------------------------ |
+| `anon_id`    | SDK       | Per SDK init     | Permanent anonymous identifier |
+| `session_id` | SDK       | 30-min timeout   | Groups related activity        |
+| `user_id`    | Your app  | After identify() | Links to your user system      |
 
 ## How It Works
 
@@ -38,6 +38,7 @@ identify("user@example.com", { plan: "pro" });
 ```
 
 The server:
+
 1. Links `anon_id` → `user_id` in the `users` table
 2. Updates `user_id` in the WebSocket handler state
 3. Updates `user_id` on the session record
