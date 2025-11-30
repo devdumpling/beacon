@@ -16,6 +16,29 @@
         </div>
       </header>
 
+      <!-- How It Works -->
+      <details class="how-it-works">
+        <summary>How Identity Tracking Works</summary>
+        <div class="details-content">
+          <p>Beacon uses three IDs to track user activity:</p>
+          <dl>
+            <dt><code>anon_id</code></dt>
+            <dd>Generated on SDK init. Persists until page refresh. All events have this.</dd>
+
+            <dt><code>session_id</code></dt>
+            <dd>Generated on init, rotates after 30min inactivity.</dd>
+
+            <dt><code>user_id</code></dt>
+            <dd>Set when you call <code>identify()</code>. Links anonymous activity to a known user.</dd>
+          </dl>
+          <p class="flow-description">
+            <strong>Flow:</strong> Anonymous events (user_id=null) → User signs in →
+            <code>identify("user@example.com")</code> → Future events include user_id →
+            Join on anon_id for retroactive attribution.
+          </p>
+        </div>
+      </details>
+
       <!-- User State Display -->
       <section class="user-state">
         <div class="user-info" id="user-info">

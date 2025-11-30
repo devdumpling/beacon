@@ -234,6 +234,87 @@ button.secondary:hover {
   color: #fca5a5;
 }
 
+/* How It Works (Details/Summary) */
+.how-it-works {
+  background: #1e293b;
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.how-it-works summary {
+  padding: 1rem 1.5rem;
+  cursor: pointer;
+  font-weight: 500;
+  color: #94a3b8;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.how-it-works summary::-webkit-details-marker {
+  display: none;
+}
+
+.how-it-works summary::before {
+  content: "▶";
+  font-size: 0.625rem;
+  transition: transform 0.2s;
+}
+
+.how-it-works[open] summary::before {
+  transform: rotate(90deg);
+}
+
+.how-it-works summary:hover {
+  color: #e2e8f0;
+}
+
+.how-it-works .details-content {
+  padding: 0 1.5rem 1.5rem;
+  font-size: 0.875rem;
+  color: #94a3b8;
+  border-top: 1px solid #334155;
+  margin-top: 0;
+  padding-top: 1rem;
+}
+
+.how-it-works dl {
+  margin: 1rem 0;
+}
+
+.how-it-works dt {
+  color: #e2e8f0;
+  font-weight: 500;
+  margin-top: 0.75rem;
+}
+
+.how-it-works dt:first-child {
+  margin-top: 0;
+}
+
+.how-it-works dd {
+  margin-left: 1rem;
+  margin-top: 0.25rem;
+}
+
+.how-it-works code {
+  background: #0f172a;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-family: ui-monospace, monospace;
+  font-size: 0.8125rem;
+  color: #60a5fa;
+}
+
+.how-it-works .flow-description {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: #0f172a;
+  border-radius: 0.375rem;
+  line-height: 1.5;
+}
+
 .placeholder {
   color: #64748b;
   font-size: 0.875rem;
