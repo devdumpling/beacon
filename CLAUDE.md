@@ -106,6 +106,7 @@ For detailed documentation, see the `docs/` folder:
 
 - [Project README](docs/README.md) - Overview and quick start
 - [Quickstart](docs/quickstart.md) - Get running in 5 minutes
+- [Roadmap](docs/roadmap.md) - Road to alpha milestones
 - [SDK Reference](docs/sdk.md) - Client SDK API
 - [API Reference](docs/api.md) - Server endpoints
 - [WebSocket Protocol](docs/protocol.md) - Wire protocol

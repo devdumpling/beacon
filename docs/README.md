@@ -112,6 +112,7 @@ just lint             # Lint and format
 | Document | Description |
 |----------|-------------|
 | [Quickstart](./quickstart.md) | Get running in 5 minutes |
+| [Roadmap](./roadmap.md) | Road to alpha milestones |
 | [SDK Reference](./sdk.md) | Client SDK installation and API |
 | [API Reference](./api.md) | Server endpoints and architecture |
 | [WebSocket Protocol](./protocol.md) | Wire protocol specification |
