@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@beacon/example-shared": "workspace:*",
     "@beacon/sdk": "workspace:*"
   },
   "devDependencies": {
