@@ -67,6 +67,19 @@ importers:
         specifier: ^2.1.0
         version: 2.1.9(@types/node@22.19.1)
 
+  apps/example-vanilla:
+    dependencies:
+      '@beacon/sdk':
+        specifier: workspace:*
+        version: link:../../packages/sdk
+    devDependencies:
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+      vite:
+        specifier: ^6.0.0
+        version: 6.4.1(@types/node@22.19.1)(jiti@1.21.7)
+
   packages/sdk:
     devDependencies:
       '@types/react':

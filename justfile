@@ -28,6 +28,10 @@ dev-api:
 dev-dashboard:
     pnpm --filter dashboard dev
 
+# Start vanilla example app
+dev-example-vanilla:
+    pnpm --filter example-vanilla dev
+
 # ─────────────────────────────────────────────────────────────
 # Build
 # ─────────────────────────────────────────────────────────────

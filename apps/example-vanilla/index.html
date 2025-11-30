@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Beacon SDK - Vanilla Example</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>Beacon SDK Example</h1>
+        <div class="connection-status" id="connection-status">
+          <span class="status-dot"></span>
+          <span class="status-text">Disconnected</span>
+        </div>
+      </header>
+
+      <section class="controls">
+        <h2>SDK Actions</h2>
+        <div class="button-group">
+          <button id="btn-track">Track Event</button>
+          <button id="btn-identify">Identify User</button>
+          <button id="btn-page">Track Page View</button>
+        </div>
+      </section>
+
+      <section class="flags">
+        <h2>Feature Flags</h2>
+        <div id="flags-container">
+          <p class="placeholder">No flags received yet</p>
+        </div>
+      </section>
+
+      <section class="log">
+        <h2>Event Log</h2>
+        <div id="event-log"></div>
+      </section>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
