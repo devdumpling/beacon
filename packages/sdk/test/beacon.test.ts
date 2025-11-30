@@ -116,7 +116,7 @@ describe("beacon SDK", () => {
 
       const { init } = await importBeacon();
       expect(() =>
-        init({ url: "http://localhost:4000", apiKey: "test-key" })
+        init({ url: "http://localhost:4000", apiKey: "test-key" }),
       ).not.toThrow();
 
       globalThis.window = originalWindow;
@@ -160,7 +160,7 @@ describe("beacon SDK", () => {
         expect.objectContaining({
           t: "e",
           event: "test_event",
-        })
+        }),
       );
     });
 
@@ -215,7 +215,7 @@ describe("beacon SDK", () => {
         expect.objectContaining({
           t: "id",
           userId: "user-123",
-        })
+        }),
       );
     });
 
@@ -301,6 +301,108 @@ describe("beacon SDK", () => {
       worker?.simulateMessage({ type: "connection", state: "connected" });
 
       expect(getConnectionState()).toBe("connected");
+    });
+  });
+
+  describe("disconnect", () => {
+    it("terminates the worker", async () => {
+      const { init, disconnect } = await importBeacon();
+
+      init({ url: "http://localhost:4000", apiKey: "test-key" });
+
+      const worker = getMockWorker();
+      expect(worker).not.toBeNull();
+      expect(worker?.terminated).toBe(false);
+
+      disconnect();
+
+      expect(worker?.terminated).toBe(true);
+    });
+
+    it("resets connection state to disconnected", async () => {
+      const { init, disconnect, getConnectionState } = await importBeacon();
+
+      init({ url: "http://localhost:4000", apiKey: "test-key" });
+
+      const worker = getMockWorker();
+      worker?.simulateMessage({ type: "connection", state: "connected" });
+      expect(getConnectionState()).toBe("connected");
+
+      disconnect();
+
+      expect(getConnectionState()).toBe("disconnected");
+    });
+
+    it("calls onConnectionChange callback with disconnected", async () => {
+      const { init, disconnect } = await importBeacon();
+      const connectionChanges: string[] = [];
+
+      init({
+        url: "http://localhost:4000",
+        apiKey: "test-key",
+        onConnectionChange: (state) => connectionChanges.push(state),
+      });
+
+      const worker = getMockWorker();
+      worker?.simulateMessage({ type: "connection", state: "connected" });
+
+      disconnect();
+
+      expect(connectionChanges).toContain("disconnected");
+    });
+
+    it("clears the message queue", async () => {
+      const { init, track, disconnect } = await importBeacon();
+
+      init({ url: "http://localhost:4000", apiKey: "test-key" });
+
+      // Queue some events before worker is ready
+      track("event1");
+      track("event2");
+
+      disconnect();
+
+      // Re-init and verify queue is empty
+      init({ url: "http://localhost:4000", apiKey: "test-key" });
+      const messages: unknown[] = [];
+      const worker = getMockWorker();
+      worker?.setMessageHandler((data) => messages.push(data));
+      worker?.simulateMessage("ready");
+
+      // Only the init message should have been sent, not the old queued events
+      const eventMessages = messages.filter((m: any) => m.t === "e");
+      expect(eventMessages).toHaveLength(0);
+    });
+
+    it("does nothing if called before init", async () => {
+      const { disconnect } = await importBeacon();
+
+      // Should not throw
+      expect(() => disconnect()).not.toThrow();
+    });
+
+    it("allows reinitializing after disconnect", async () => {
+      const { init, disconnect, track } = await importBeacon();
+
+      init({ url: "http://localhost:4000", apiKey: "test-key" });
+      disconnect();
+
+      // Re-init
+      init({ url: "http://localhost:4000", apiKey: "test-key" });
+
+      const worker = getMockWorker();
+      const messages: unknown[] = [];
+      worker?.setMessageHandler((data) => messages.push(data));
+      worker?.simulateMessage("ready");
+
+      track("after_reconnect");
+
+      expect(messages).toContainEqual(
+        expect.objectContaining({
+          t: "e",
+          event: "after_reconnect",
+        }),
+      );
     });
   });
 });

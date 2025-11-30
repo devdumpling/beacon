@@ -238,3 +238,32 @@ export function page(props?: EventProps): void {
     ...props,
   });
 }
+
+/**
+ * Disconnect from the Beacon server and clean up resources.
+ *
+ * Terminates the Web Worker, closes the WebSocket connection, and resets
+ * all internal state. Call this when unmounting your app or when you need
+ * to reinitialize with different configuration.
+ *
+ * @example
+ * ```ts
+ * // In React useEffect cleanup
+ * useEffect(() => {
+ *   init({ url: "...", apiKey: "..." });
+ *   return () => disconnect();
+ * }, []);
+ * ```
+ */
+export function disconnect(): void {
+  if (worker) {
+    worker.terminate();
+    worker = null;
+  }
+  queue = [];
+  ready = false;
+  currentConnectionState = "disconnected";
+  connectionChangeCallback?.("disconnected");
+  connectionChangeCallback = undefined;
+  errorCallback = undefined;
+}
