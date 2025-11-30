@@ -5,6 +5,7 @@ import {
   identify,
   page,
   getConnectionState,
+  disconnect,
   type ConnectionState,
   type EventProps,
 } from "@beacon/sdk";
@@ -184,6 +185,8 @@ export default function App() {
 
     // Set initial connection state
     setConnectionState(getConnectionState());
+
+    return () => disconnect();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
