@@ -1,4 +1,5 @@
 import beacon/db/sessions
+import beacon/log
 import beacon/services/connections
 import beacon/services/events
 import beacon/services/flags
@@ -53,7 +54,10 @@ pub fn init(
   connections.register(services.conns, project_id, conn_id, conn)
 
   // Create or update session record in database
-  let _ = sessions.upsert(services.db, project_id, session_id, anon_id)
+  case sessions.upsert(services.db, project_id, session_id, anon_id) {
+    Ok(_) -> Nil
+    Error(_) -> Nil
+  }
 
   let state =
     State(
@@ -110,7 +114,10 @@ pub fn handle(
             traits,
           )
           // Link user_id to session
-          let _ = sessions.set_user(state.db, state.session_id, user_id)
+          case sessions.set_user(state.db, state.session_id, user_id) {
+            Ok(_) -> Nil
+            Error(_) -> Nil
+          }
           mist.continue(State(..state, user_id: Some(user_id)))
         }
 
@@ -119,7 +126,13 @@ pub fn handle(
           mist.continue(state)
         }
 
-        Error(_) -> mist.continue(state)
+        Error(_) -> {
+          log.warn("Failed to parse WebSocket message", [
+            log.str("session_id", state.session_id),
+            log.str("raw_message", text),
+          ])
+          mist.continue(state)
+        }
       }
     }
 

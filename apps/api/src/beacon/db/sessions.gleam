@@ -1,4 +1,5 @@
 import beacon/log
+import gleam/int
 import gleam/option.{type Option}
 import pog
 
@@ -10,6 +11,26 @@ pub type Session {
     anon_id: String,
     user_id: Option(String),
   )
+}
+
+/// Format a pog.QueryError into a human-readable string for logging
+fn format_query_error(err: pog.QueryError) -> String {
+  case err {
+    pog.ConstraintViolated(message, constraint, _detail) ->
+      "Constraint violated: " <> constraint <> " - " <> message
+    pog.PostgresqlError(code, name, message) ->
+      "PostgreSQL error [" <> code <> "/" <> name <> "]: " <> message
+    pog.UnexpectedArgumentCount(expected, got) ->
+      "Unexpected argument count: expected "
+      <> int.to_string(expected)
+      <> ", got "
+      <> int.to_string(got)
+    pog.UnexpectedArgumentType(expected, got) ->
+      "Unexpected argument type: expected " <> expected <> ", got " <> got
+    pog.UnexpectedResultType(_decode_errors) -> "Unexpected result type"
+    pog.QueryTimeout -> "Query timeout"
+    pog.ConnectionUnavailable -> "Connection unavailable"
+  }
 }
 
 /// Create or update a session when a client connects
@@ -36,6 +57,7 @@ pub fn upsert(
       log.error("Failed to upsert session", [
         log.str("session_id", session_id),
         log.str("project_id", project_id),
+        log.str("error", format_query_error(e)),
       ])
       Error(e)
     }
@@ -56,7 +78,13 @@ pub fn touch(
     |> pog.execute(db)
   {
     Ok(_) -> Ok(Nil)
-    Error(e) -> Error(e)
+    Error(e) -> {
+      log.error("Failed to touch session", [
+        log.str("session_id", session_id),
+        log.str("error", format_query_error(e)),
+      ])
+      Error(e)
+    }
   }
 }
 
@@ -73,7 +101,14 @@ pub fn set_user(
     |> pog.execute(db)
   {
     Ok(_) -> Ok(Nil)
-    Error(e) -> Error(e)
+    Error(e) -> {
+      log.error("Failed to set user on session", [
+        log.str("session_id", session_id),
+        log.str("user_id", user_id),
+        log.str("error", format_query_error(e)),
+      ])
+      Error(e)
+    }
   }
 }
 
@@ -93,6 +128,13 @@ pub fn set_entry_url(
     |> pog.execute(db)
   {
     Ok(_) -> Ok(Nil)
-    Error(e) -> Error(e)
+    Error(e) -> {
+      log.error("Failed to set entry URL on session", [
+        log.str("session_id", session_id),
+        log.str("url", url),
+        log.str("error", format_query_error(e)),
+      ])
+      Error(e)
+    }
   }
 }
