@@ -17,18 +17,18 @@
 
 <div class="space-y-8">
   <div class="flex items-center justify-between">
-    <h2 class="text-2xl font-semibold">Overview</h2>
+    <h2 class="text-2xl font-semibold text-rp-text">Overview</h2>
     {#if projectQuery.loading}
-      <span class="text-sm text-gray-500">Syncing...</span>
+      <span class="text-sm text-rp-muted">Syncing...</span>
     {:else}
-      <span class="text-sm text-green-600">Live</span>
+      <span class="text-sm text-rp-pine">Live</span>
     {/if}
   </div>
 
   {#if projectQuery.loading}
-    <div class="text-gray-500">Loading project...</div>
+    <div class="text-rp-muted">Loading project...</div>
   {:else if !projectId}
-    <div class="text-gray-500">No project found. Create a project to get started.</div>
+    <div class="text-rp-muted">No project found. Create a project to get started.</div>
   {:else}
     <OverviewDashboard {projectId} />
   {/if}

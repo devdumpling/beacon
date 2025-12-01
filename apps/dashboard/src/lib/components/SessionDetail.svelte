@@ -33,73 +33,73 @@
 </script>
 
 {#if loading}
-  <div class="text-gray-500">Loading session...</div>
+  <div class="text-rp-muted">Loading session...</div>
 {:else if !session}
-  <div class="text-gray-500">Session not found.</div>
+  <div class="text-rp-muted">Session not found.</div>
 {:else}
   <!-- Session Metadata -->
-  <div class="bg-white rounded-lg shadow p-6 mb-6">
+  <div class="bg-rp-surface rounded-lg border border-rp-overlay p-6 mb-6">
     <div class="grid grid-cols-2 gap-4">
       <div>
-        <div class="text-sm text-gray-500">Session ID</div>
-        <div class="font-mono text-sm">{session.id}</div>
+        <div class="text-sm text-rp-muted">Session ID</div>
+        <div class="font-mono text-sm text-rp-text">{session.id}</div>
       </div>
       <div>
-        <div class="text-sm text-gray-500">User</div>
-        <div class="text-sm">
+        <div class="text-sm text-rp-muted">User</div>
+        <div class="text-sm text-rp-text">
           {session.user_id ?? (session.anon_id ? `Anonymous (${session.anon_id.slice(0, 8)}...)` : "-")}
         </div>
       </div>
       <div>
-        <div class="text-sm text-gray-500">Started</div>
-        <div class="text-sm">{formatTimestamp(session.started_at)}</div>
+        <div class="text-sm text-rp-muted">Started</div>
+        <div class="text-sm text-rp-text">{formatTimestamp(session.started_at)}</div>
       </div>
       <div>
-        <div class="text-sm text-gray-500">Last Event</div>
-        <div class="text-sm">{formatTimestamp(session.last_event_at)}</div>
+        <div class="text-sm text-rp-muted">Last Event</div>
+        <div class="text-sm text-rp-text">{formatTimestamp(session.last_event_at)}</div>
       </div>
       <div>
-        <div class="text-sm text-gray-500">Entry URL</div>
-        <div class="text-sm font-mono truncate" title={session.entry_url ?? ""}>
+        <div class="text-sm text-rp-muted">Entry URL</div>
+        <div class="text-sm font-mono truncate text-rp-subtle" title={session.entry_url ?? ""}>
           {session.entry_url ?? "-"}
         </div>
       </div>
       <div>
-        <div class="text-sm text-gray-500">Events</div>
-        <div class="text-sm font-medium">{session.event_count}</div>
+        <div class="text-sm text-rp-muted">Events</div>
+        <div class="text-sm font-medium text-rp-text">{session.event_count}</div>
       </div>
     </div>
   </div>
 
   <!-- Event Timeline -->
-  <div class="bg-white rounded-lg shadow">
-    <div class="p-4 border-b">
-      <h3 class="font-semibold">Event Timeline ({eventsQuery.data.length} events)</h3>
+  <div class="bg-rp-surface rounded-lg border border-rp-overlay">
+    <div class="p-4 border-b border-rp-overlay">
+      <h3 class="font-semibold text-rp-text">Event Timeline ({eventsQuery.data.length} events)</h3>
     </div>
     {#if eventsQuery.data.length === 0}
-      <div class="p-8 text-center text-gray-500">No events recorded.</div>
+      <div class="p-8 text-center text-rp-muted">No events recorded.</div>
     {:else}
-      <div class="divide-y">
+      <div class="divide-y divide-rp-overlay">
         {#each eventsQuery.data as event (event.id)}
-          <div class="p-4 hover:bg-gray-50">
+          <div class="p-4 hover:bg-rp-overlay/30">
             <div class="flex items-start justify-between">
               <div class="flex items-center gap-3">
-                <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+                <div class="w-2 h-2 rounded-full bg-rp-iris"></div>
                 <div>
-                  <div class="font-mono text-sm font-medium">{event.event_name}</div>
-                  <div class="text-xs text-gray-500">{formatTimestamp(event.timestamp)}</div>
+                  <div class="font-mono text-sm font-medium text-rp-text">{event.event_name}</div>
+                  <div class="text-xs text-rp-muted">{formatTimestamp(event.timestamp)}</div>
                 </div>
               </div>
               <button
                 onclick={() => toggleExpanded(event.id)}
-                class="text-sm text-gray-500 hover:text-gray-700"
+                class="text-sm text-rp-muted hover:text-rp-text"
               >
                 {expandedId === event.id ? "Hide" : "Properties"}
               </button>
             </div>
             {#if expandedId === event.id}
               <div class="mt-3 ml-5">
-                <pre class="text-xs font-mono bg-gray-100 p-3 rounded overflow-x-auto">{formatProperties(event.properties)}</pre>
+                <pre class="text-xs font-mono bg-rp-base text-rp-text p-3 rounded overflow-x-auto">{formatProperties(event.properties)}</pre>
               </div>
             {/if}
           </div>

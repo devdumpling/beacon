@@ -11,13 +11,13 @@
 
 <div class="space-y-6">
   <div class="flex items-center gap-4">
-    <a href="/sessions" class="text-gray-500 hover:text-gray-700">&larr; Sessions</a>
-    <h2 class="text-2xl font-semibold">Session Detail</h2>
+    <a href="/sessions" class="text-rp-muted hover:text-rp-text">&larr; Sessions</a>
+    <h2 class="text-2xl font-semibold text-rp-text">Session Detail</h2>
   </div>
 
   {#if sessionId}
     <SessionDetail {sessionId} />
   {:else}
-    <div class="text-gray-500">Invalid session ID.</div>
+    <div class="text-rp-muted">Invalid session ID.</div>
   {/if}
 </div>
