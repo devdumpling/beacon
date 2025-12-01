@@ -53,9 +53,93 @@ export interface BeaconConfig {
 }
 
 type WorkerMessage =
-  | { t: "init"; url: string; apiKey: string }
+  | {
+      t: "init";
+      url: string;
+      apiKey: string;
+      anonId: string;
+      sessionId: string;
+    }
   | { t: "e"; event: string; props?: EventProps; ts: number }
   | { t: "id"; userId: string; traits?: EventProps };
+
+// Session persistence constants
+const STORAGE_PREFIX = "beacon_";
+const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
+
+/**
+ * Get or create a persistent anonymous ID.
+ * Stored in localStorage and persists forever (identifies the device/browser).
+ */
+function getOrCreateAnonId(): string {
+  if (typeof localStorage === "undefined") {
+    return crypto.randomUUID();
+  }
+
+  const key = `${STORAGE_PREFIX}anon_id`;
+  let anonId = localStorage.getItem(key);
+  if (!anonId) {
+    anonId = crypto.randomUUID();
+    localStorage.setItem(key, anonId);
+  }
+  return anonId;
+}
+
+/**
+ * Get or create a session ID with 30-min inactivity timeout.
+ * If the stored session has expired (30+ min since last activity), creates a new one.
+ */
+function getOrCreateSessionId(): string {
+  if (typeof localStorage === "undefined") {
+    return crypto.randomUUID();
+  }
+
+  const key = `${STORAGE_PREFIX}session`;
+  const stored = localStorage.getItem(key);
+
+  if (stored) {
+    try {
+      const { id, timestamp } = JSON.parse(stored);
+      if (Date.now() - timestamp < SESSION_TIMEOUT) {
+        // Session still valid, update timestamp
+        localStorage.setItem(
+          key,
+          JSON.stringify({ id, timestamp: Date.now() }),
+        );
+        return id;
+      }
+    } catch {
+      // Invalid JSON, create new session
+    }
+  }
+
+  // Create new session
+  const newId = crypto.randomUUID();
+  localStorage.setItem(
+    key,
+    JSON.stringify({ id: newId, timestamp: Date.now() }),
+  );
+  return newId;
+}
+
+/**
+ * Update the session timestamp to extend the session timeout.
+ * Called on every user activity (track, identify, page).
+ */
+function touchSession(): void {
+  if (typeof localStorage === "undefined") return;
+
+  const key = `${STORAGE_PREFIX}session`;
+  const stored = localStorage.getItem(key);
+  if (stored) {
+    try {
+      const { id } = JSON.parse(stored);
+      localStorage.setItem(key, JSON.stringify({ id, timestamp: Date.now() }));
+    } catch {
+      // Invalid JSON, ignore
+    }
+  }
+}
 
 let worker: Worker | null = null;
 let queue: WorkerMessage[] = [];
@@ -133,7 +217,17 @@ export function init(config: BeaconConfig): void {
     }
   };
 
-  worker.postMessage({ t: "init", url: config.url, apiKey: config.apiKey });
+  // Get or create persistent IDs
+  const anonId = getOrCreateAnonId();
+  const sessionId = getOrCreateSessionId();
+
+  worker.postMessage({
+    t: "init",
+    url: config.url,
+    apiKey: config.apiKey,
+    anonId,
+    sessionId,
+  });
 }
 
 /**
@@ -175,6 +269,7 @@ export function getConnectionState(): ConnectionState {
  * ```
  */
 export function track(event: string, props?: EventProps): void {
+  touchSession();
   send({ t: "e", event, props, ts: Date.now() });
 }
 
@@ -200,6 +295,7 @@ export function track(event: string, props?: EventProps): void {
  * ```
  */
 export function identify(userId: string, traits?: EventProps): void {
+  touchSession();
   send({ t: "id", userId, traits });
 }
 

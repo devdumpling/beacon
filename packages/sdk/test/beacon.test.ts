@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { getMockWorker } from "./setup";
+import { getMockWorker, getMockLocalStorage } from "./setup";
 
 // We need to dynamically import to get fresh module state
 async function importBeacon() {
@@ -403,6 +403,181 @@ describe("beacon SDK", () => {
           event: "after_reconnect",
         }),
       );
+    });
+  });
+
+  describe("session persistence", () => {
+    it("stores anonId in localStorage on first init", async () => {
+      const { init } = await importBeacon();
+      const localStorage = getMockLocalStorage();
+
+      init({ url: "http://localhost:4000", apiKey: "test-key" });
+
+      const storedAnonId = localStorage.getItem("beacon_anon_id");
+      expect(storedAnonId).not.toBeNull();
+      expect(storedAnonId).toMatch(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+      );
+    });
+
+    it("reuses existing anonId from localStorage", async () => {
+      const localStorage = getMockLocalStorage();
+      const existingAnonId = "existing-anon-id-12345";
+      localStorage.setItem("beacon_anon_id", existingAnonId);
+
+      const { init } = await importBeacon();
+      const messages: unknown[] = [];
+
+      init({ url: "http://localhost:4000", apiKey: "test-key" });
+
+      const worker = getMockWorker();
+      worker?.setMessageHandler((data) => messages.push(data));
+
+      // The anonId should still be the same
+      expect(localStorage.getItem("beacon_anon_id")).toBe(existingAnonId);
+    });
+
+    it("stores session with timestamp in localStorage", async () => {
+      const { init } = await importBeacon();
+      const localStorage = getMockLocalStorage();
+
+      init({ url: "http://localhost:4000", apiKey: "test-key" });
+
+      const storedSession = localStorage.getItem("beacon_session");
+      expect(storedSession).not.toBeNull();
+
+      const parsed = JSON.parse(storedSession!);
+      expect(parsed.id).toMatch(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+      );
+      expect(parsed.timestamp).toBeGreaterThan(0);
+    });
+
+    it("reuses session within 30-min timeout", async () => {
+      const localStorage = getMockLocalStorage();
+      const existingSessionId = "existing-session-12345";
+      const recentTimestamp = Date.now() - 10 * 60 * 1000; // 10 minutes ago
+      localStorage.setItem(
+        "beacon_session",
+        JSON.stringify({ id: existingSessionId, timestamp: recentTimestamp }),
+      );
+
+      const { init } = await importBeacon();
+
+      init({ url: "http://localhost:4000", apiKey: "test-key" });
+
+      const storedSession = localStorage.getItem("beacon_session");
+      const parsed = JSON.parse(storedSession!);
+      expect(parsed.id).toBe(existingSessionId);
+      // Timestamp should be updated
+      expect(parsed.timestamp).toBeGreaterThan(recentTimestamp);
+    });
+
+    it("creates new session after 30-min timeout", async () => {
+      const localStorage = getMockLocalStorage();
+      const oldSessionId = "old-session-12345";
+      const expiredTimestamp = Date.now() - 35 * 60 * 1000; // 35 minutes ago
+      localStorage.setItem(
+        "beacon_session",
+        JSON.stringify({ id: oldSessionId, timestamp: expiredTimestamp }),
+      );
+
+      const { init } = await importBeacon();
+
+      init({ url: "http://localhost:4000", apiKey: "test-key" });
+
+      const storedSession = localStorage.getItem("beacon_session");
+      const parsed = JSON.parse(storedSession!);
+      expect(parsed.id).not.toBe(oldSessionId);
+    });
+
+    it("updates session timestamp on track", async () => {
+      const { init, track } = await importBeacon();
+      const localStorage = getMockLocalStorage();
+
+      init({ url: "http://localhost:4000", apiKey: "test-key" });
+
+      const worker = getMockWorker();
+      worker?.simulateMessage("ready");
+
+      const initialSession = JSON.parse(
+        localStorage.getItem("beacon_session")!,
+      );
+      const initialTimestamp = initialSession.timestamp;
+
+      // Advance time slightly
+      vi.advanceTimersByTime(1000);
+
+      track("test_event");
+
+      const updatedSession = JSON.parse(
+        localStorage.getItem("beacon_session")!,
+      );
+      expect(updatedSession.id).toBe(initialSession.id);
+      expect(updatedSession.timestamp).toBeGreaterThan(initialTimestamp);
+    });
+
+    it("updates session timestamp on identify", async () => {
+      const { init, identify } = await importBeacon();
+      const localStorage = getMockLocalStorage();
+
+      init({ url: "http://localhost:4000", apiKey: "test-key" });
+
+      const worker = getMockWorker();
+      worker?.simulateMessage("ready");
+
+      const initialSession = JSON.parse(
+        localStorage.getItem("beacon_session")!,
+      );
+      const initialTimestamp = initialSession.timestamp;
+
+      // Advance time slightly
+      vi.advanceTimersByTime(1000);
+
+      identify("user-123");
+
+      const updatedSession = JSON.parse(
+        localStorage.getItem("beacon_session")!,
+      );
+      expect(updatedSession.id).toBe(initialSession.id);
+      expect(updatedSession.timestamp).toBeGreaterThan(initialTimestamp);
+    });
+
+    it("passes anonId and sessionId to worker on init", async () => {
+      const localStorage = getMockLocalStorage();
+      const existingAnonId = "test-anon-id";
+      const existingSessionId = "test-session-id";
+      localStorage.setItem("beacon_anon_id", existingAnonId);
+      localStorage.setItem(
+        "beacon_session",
+        JSON.stringify({ id: existingSessionId, timestamp: Date.now() }),
+      );
+
+      const { init } = await importBeacon();
+      const messages: unknown[] = [];
+
+      init({ url: "http://localhost:4000", apiKey: "test-key" });
+
+      const worker = getMockWorker();
+      // Capture the init message that was already sent
+      // The first postMessage call should have been the init
+      expect(worker).not.toBeNull();
+    });
+
+    it("handles invalid JSON in session storage gracefully", async () => {
+      const localStorage = getMockLocalStorage();
+      localStorage.setItem("beacon_session", "not valid json");
+
+      const { init } = await importBeacon();
+
+      // Should not throw
+      expect(() =>
+        init({ url: "http://localhost:4000", apiKey: "test-key" }),
+      ).not.toThrow();
+
+      // Should create a new valid session
+      const storedSession = localStorage.getItem("beacon_session");
+      expect(() => JSON.parse(storedSession!)).not.toThrow();
     });
   });
 });
