@@ -11,9 +11,13 @@ import { schema, type Schema } from "./schema";
 import { Zero, type Query } from "@rocicorp/zero";
 import { getContext, setContext, untrack } from "svelte";
 
-const ZERO_KEY = Symbol("zero");
+// Use string key instead of Symbol for HMR stability (Symbols are unique per module load)
+const ZERO_KEY = "__zero_client__";
 
 export type ZeroClient = Zero<Schema>;
+
+// Module-level fallback for HMR scenarios where context may be lost
+let _zeroInstance: ZeroClient | null = null;
 
 /**
  * Initialize Zero client and set it in Svelte context.
@@ -33,6 +37,8 @@ export function createZero(
     userID,
   });
 
+  // Store at module level for HMR resilience
+  _zeroInstance = zero;
   setContext(ZERO_KEY, zero);
   return zero;
 }
@@ -40,9 +46,11 @@ export function createZero(
 /**
  * Get Zero client from Svelte context.
  * Must be called after createZero() in a parent component.
+ * Falls back to module-level instance for HMR resilience.
  */
 export function getZero(): ZeroClient {
-  const zero = getContext<ZeroClient>(ZERO_KEY);
+  // Try context first, fall back to module-level instance for HMR
+  const zero = getContext<ZeroClient>(ZERO_KEY) ?? _zeroInstance;
   if (!zero) {
     throw new Error(
       "Zero not initialized. Call createZero() in +layout.svelte first."

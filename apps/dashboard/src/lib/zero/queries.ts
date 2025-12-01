@@ -115,6 +115,19 @@ export const sessionById = syncedQuery(
   (sessionId) => builder.sessions.where("id", sessionId).one()
 );
 
+/**
+ * Get events for a specific session
+ */
+export const eventsForSession = syncedQuery(
+  "eventsForSession",
+  z.tuple([z.string()]),
+  (sessionId) =>
+    builder.events
+      .where("session_id", sessionId)
+      .orderBy("timestamp", "asc")
+      .limit(500)
+);
+
 // ============================================
 // FLAGS
 // ============================================
@@ -179,6 +192,7 @@ export const queries = [
   projectById,
   recentEvents,
   eventsInWindow,
+  eventsForSession,
   recentSessions,
   sessionsInWindow,
   sessionById,

@@ -2,7 +2,7 @@
   import { useQuery } from "$lib/zero/client.svelte";
   import { firstProject } from "$lib/zero/queries";
   import type { Project } from "$lib/zero/schema";
-  import FlagsList from "$lib/components/FlagsList.svelte";
+  import EventsList from "$lib/components/EventsList.svelte";
 
   // Get the first project using synced query
   const projectQuery = useQuery<Project>(firstProject());
@@ -12,12 +12,12 @@
 </script>
 
 <svelte:head>
-  <title>Feature Flags | Beacon</title>
+  <title>Events | Beacon</title>
 </svelte:head>
 
 <div class="space-y-6">
   <div class="flex justify-between items-center">
-    <h2 class="text-2xl font-semibold">Feature Flags</h2>
+    <h2 class="text-2xl font-semibold">Events</h2>
     {#if projectQuery.loading}
       <span class="text-sm text-gray-500">Syncing...</span>
     {:else}
@@ -30,6 +30,6 @@
   {:else if !projectId}
     <div class="text-gray-500">No project found. Create a project to get started.</div>
   {:else}
-    <FlagsList {projectId} />
+    <EventsList {projectId} />
   {/if}
 </div>
