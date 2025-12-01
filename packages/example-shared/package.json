@@ -8,6 +8,6 @@
     "./style.css": "./src/style.css"
   },
   "devDependencies": {
-    "typescript": "^5.9.3"
+    "typescript": "catalog:"
   }
 }
