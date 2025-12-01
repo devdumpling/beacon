@@ -33,7 +33,10 @@
     "vitest": "catalog:"
   },
   "dependencies": {
+    "@lucia-auth/adapter-postgresql": "^3.1.2",
+    "@node-rs/argon2": "^2.0.2",
     "@rocicorp/zero": "^0.24.3000000000",
+    "lucia": "^3.2.2",
     "postgres": "catalog:",
     "zod": "catalog:"
   }
