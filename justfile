@@ -92,6 +92,33 @@ typecheck-examples:
     pnpm --filter example-react typecheck
 
 # ─────────────────────────────────────────────────────────────
+# Benchmark
+# ─────────────────────────────────────────────────────────────
+
+# Run full benchmark suite (SDK size + load test + validation)
+bench: bench-sdk-size bench-load bench-validate
+
+# Measure SDK bundle sizes (no server needed)
+bench-sdk-size:
+    pnpm exec tsx scripts/benchmark-sdk-size.ts
+
+# Run throughput load test with k6 (requires running server + k6 installed)
+bench-load:
+    k6 run scripts/load-test.k6.js
+
+# Run connection limits stress test with k6
+bench-connections:
+    k6 run scripts/load-test-connections.k6.js
+
+# Validate load test events persisted to database
+bench-validate:
+    pnpm exec tsx scripts/benchmark-validate.ts
+
+# Clean up load test data from database
+bench-clean:
+    pnpm exec tsx scripts/benchmark-validate.ts --clean
+
+# ─────────────────────────────────────────────────────────────
 # Lint & Format
 # ─────────────────────────────────────────────────────────────
 

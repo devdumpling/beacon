@@ -7,7 +7,7 @@ Lightweight, privacy-first analytics platform.
 ## Goals
 
 1. **Lightweight and simple** — Minimal API surface, robust code, performance over feature bloat
-2. **Tiny client SDK** — <1kb gzipped, runs in a Web Worker off the main thread
+2. **Tiny client SDK** — <1KB worker gzipped (838B), runs in a Web Worker off the main thread
 3. **Self-host friendly** — Easy to fork and customize for your organization
 4. **Privacy compliant** — Built for FedRAMP and HIPAA, designed for healthcare
 5. **Scale on simplicity** — Push Postgres and Gleam (Erlang BEAM) as far as they go
@@ -101,6 +101,12 @@ just db-shell         # Open psql
 just test-api         # Gleam unit tests
 just test-sdk         # SDK unit tests
 just test-integration # Integration tests (requires running server)
+
+# Benchmark
+just bench-sdk-size   # Measure SDK bundle sizes
+just bench-load       # Run k6 throughput tests (requires server + k6)
+just bench-connections # Run k6 connection limits test
+just bench-validate   # Verify load test events persisted
 
 # Build
 just build            # Build all packages

@@ -2,7 +2,7 @@
 
 Lightweight, privacy-first analytics platform. Alpha prototype.
 
-**Goals:** Minimal API surface, <1kb SDK in Web Worker, self-host friendly, FedRAMP/HIPAA compliant, scale on Postgres + Gleam simplicity.
+**Goals:** Minimal API surface, <1KB SDK worker (838B gzipped), self-host friendly, FedRAMP/HIPAA compliant, scale on Postgres + Gleam simplicity.
 
 ## Quick Reference
 
@@ -89,6 +89,15 @@ Server pushes: `{"type": "flags", "flags": {"key": true}}`
 just test-api          # Gleam unit tests (22 tests)
 just test-integration  # Integration tests (26 tests, requires running server)
 just test-sdk          # SDK unit tests (40 tests)
+```
+
+## Benchmarking
+
+```bash
+just bench-sdk-size    # Measure SDK bundle sizes (no server needed)
+just bench-load        # k6 throughput test (requires server + k6)
+just bench-connections # k6 connection limits test
+just bench-validate    # Verify load test events persisted to DB
 ```
 
 ## Database
