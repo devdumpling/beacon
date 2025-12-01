@@ -26,7 +26,7 @@ jobs:
       - uses: erlef/setup-beam@v1
         with:
           otp-version: "28"
-          gleam-version: "1.6"
+          gleam-version: "1.13"
           rebar3-version: "3.25"
 
       - name: Install dependencies
@@ -72,7 +72,7 @@ jobs:
       - uses: erlef/setup-beam@v1
         with:
           otp-version: "28"
-          gleam-version: "1.6"
+          gleam-version: "1.13"
           rebar3-version: "3.25"
 
       - name: Install dependencies
@@ -158,7 +158,7 @@ jobs:
       - uses: erlef/setup-beam@v1
         with:
           otp-version: "28"
-          gleam-version: "1.6"
+          gleam-version: "1.13"
           rebar3-version: "3.25"
 
       - name: Install dbmate
