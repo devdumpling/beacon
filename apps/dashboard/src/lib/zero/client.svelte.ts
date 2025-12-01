@@ -30,7 +30,7 @@ let _zeroInstance: ZeroClient | null = null;
  */
 export function createZero(
   userID: string = "dashboard-admin",
-  server: string = "http://localhost:4848"
+  server: string = "http://localhost:4848",
 ): ZeroClient {
   const zero = new Zero<Schema, Mutators>({
     server,
@@ -55,7 +55,7 @@ export function getZero(): ZeroClient {
   const zero = getContext<ZeroClient>(ZERO_KEY) ?? _zeroInstance;
   if (!zero) {
     throw new Error(
-      "Zero not initialized. Call createZero() in +layout.svelte first."
+      "Zero not initialized. Call createZero() in +layout.svelte first.",
     );
   }
   return zero;
@@ -93,7 +93,7 @@ export interface QueryResult<T> {
  */
 export function useQuery<
   TTable extends keyof Schema["tables"] & string,
-  TReturn
+  TReturn,
 >(query: Query<Schema, TTable, TReturn>): QueryResult<TReturn> {
   const zero = getZero();
 
@@ -168,7 +168,7 @@ export interface QueryOneResult<T> {
  */
 export function useQueryOne<
   TTable extends keyof Schema["tables"] & string,
-  TReturn
+  TReturn,
 >(query: Query<Schema, TTable, TReturn>): QueryOneResult<TReturn> {
   const zero = getZero();
 

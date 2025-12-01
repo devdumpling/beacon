@@ -54,10 +54,8 @@ pub fn insert_batch(
     })
 
   // Count successes and failures
-  let success_count =
-    list.count(results, fn(r) { result.is_ok(r) })
-  let failure_count =
-    list.count(results, fn(r) { result.is_error(r) })
+  let success_count = list.count(results, fn(r) { result.is_ok(r) })
+  let failure_count = list.count(results, fn(r) { result.is_error(r) })
 
   // Log any failures
   case failure_count > 0 {

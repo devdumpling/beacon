@@ -136,7 +136,7 @@ export const builder = createBuilder(schema);
  */
 export const permissions = definePermissions<Record<string, never>, Schema>(
   schema,
-  () => ({})
+  () => ({}),
 );
 
 // ============================================

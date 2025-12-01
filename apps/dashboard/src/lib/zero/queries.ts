@@ -25,14 +25,16 @@ export type AuthContext = {
  * Get the first project (for single-tenant development)
  */
 export const firstProject = syncedQuery("firstProject", z.tuple([]), () =>
-  builder.projects.limit(1)
+  builder.projects.limit(1),
 );
 
 /**
  * Get all projects
  */
-export const allProjects = syncedQuery("allProjects", z.tuple([]), () =>
-  builder.projects
+export const allProjects = syncedQuery(
+  "allProjects",
+  z.tuple([]),
+  () => builder.projects,
 );
 
 /**
@@ -41,7 +43,7 @@ export const allProjects = syncedQuery("allProjects", z.tuple([]), () =>
 export const projectById = syncedQuery(
   "projectById",
   z.tuple([z.string()]),
-  (projectId) => builder.projects.where("id", projectId).one()
+  (projectId) => builder.projects.where("id", projectId).one(),
 );
 
 // ============================================
@@ -58,7 +60,7 @@ export const recentEvents = syncedQuery(
     builder.events
       .where("project_id", projectId)
       .orderBy("timestamp", "desc")
-      .limit(limit)
+      .limit(limit),
 );
 
 /**
@@ -72,7 +74,7 @@ export const eventsInWindow = syncedQuery(
     return builder.events
       .where("project_id", projectId)
       .where("timestamp", ">=", sinceMs);
-  }
+  },
 );
 
 // ============================================
@@ -89,7 +91,7 @@ export const recentSessions = syncedQuery(
     builder.sessions
       .where("project_id", projectId)
       .orderBy("started_at", "desc")
-      .limit(limit)
+      .limit(limit),
 );
 
 /**
@@ -103,7 +105,7 @@ export const sessionsInWindow = syncedQuery(
     return builder.sessions
       .where("project_id", projectId)
       .where("started_at", ">=", sinceMs);
-  }
+  },
 );
 
 /**
@@ -112,7 +114,7 @@ export const sessionsInWindow = syncedQuery(
 export const sessionById = syncedQuery(
   "sessionById",
   z.tuple([z.string()]),
-  (sessionId) => builder.sessions.where("id", sessionId).one()
+  (sessionId) => builder.sessions.where("id", sessionId).one(),
 );
 
 /**
@@ -125,7 +127,7 @@ export const eventsForSession = syncedQuery(
     builder.events
       .where("session_id", sessionId)
       .orderBy("timestamp", "asc")
-      .limit(500)
+      .limit(500),
 );
 
 // ============================================
@@ -139,7 +141,7 @@ export const flagsForProject = syncedQuery(
   "flagsForProject",
   z.tuple([z.string()]),
   (projectId) =>
-    builder.flags.where("project_id", projectId).orderBy("key", "asc")
+    builder.flags.where("project_id", projectId).orderBy("key", "asc"),
 );
 
 /**
@@ -149,7 +151,7 @@ export const enabledFlags = syncedQuery(
   "enabledFlags",
   z.tuple([z.string()]),
   (projectId) =>
-    builder.flags.where("project_id", projectId).where("enabled", "=", true)
+    builder.flags.where("project_id", projectId).where("enabled", "=", true),
 );
 
 // ============================================
@@ -166,7 +168,7 @@ export const usersForProject = syncedQuery(
     builder.users
       .where("project_id", projectId)
       .orderBy("last_seen_at", "desc")
-      .limit(limit)
+      .limit(limit),
 );
 
 /**
@@ -176,7 +178,7 @@ export const identifiedUsers = syncedQuery(
   "identifiedUsers",
   z.tuple([z.string()]),
   (projectId) =>
-    builder.users.where("project_id", projectId).where("user_id", "!=", null)
+    builder.users.where("project_id", projectId).where("user_id", "!=", null),
 );
 
 // ============================================

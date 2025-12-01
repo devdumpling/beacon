@@ -20,7 +20,7 @@ export function createMutators() {
        */
       toggle: async (
         tx: Transaction<Schema>,
-        { id, enabled }: { id: string; enabled: boolean }
+        { id, enabled }: { id: string; enabled: boolean },
       ) => {
         await tx.mutate.flags.update({
           id,
@@ -46,7 +46,7 @@ export function createMutators() {
           key: string;
           name: string;
           enabled?: boolean;
-        }
+        },
       ) => {
         const now = Date.now();
         await tx.mutate.flags.insert({

@@ -14,7 +14,7 @@ import { queries, type AuthContext } from "$lib/zero/queries";
 
 // Create validated query map
 const validatedQueries = Object.fromEntries(
-  queries.map((q) => [q.queryName, withValidation(q)])
+  queries.map((q) => [q.queryName, withValidation(q)]),
 );
 
 export const POST: RequestHandler = async ({ request }) => {
