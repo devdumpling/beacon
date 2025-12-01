@@ -4,11 +4,11 @@ Beacon uses a three-tier identity system to track users from first visit through
 
 ## Identity Types
 
-| ID           | Generator | Persistence      | Purpose                        |
-| ------------ | --------- | ---------------- | ------------------------------ |
-| `anon_id`    | SDK       | Per SDK init     | Permanent anonymous identifier |
-| `session_id` | SDK       | 30-min timeout   | Groups related activity        |
-| `user_id`    | Your app  | After identify() | Links to your user system      |
+| ID           | Generator | Persistence             | Purpose                        |
+| ------------ | --------- | ----------------------- | ------------------------------ |
+| `anon_id`    | SDK       | Forever (localStorage)  | Permanent anonymous identifier |
+| `session_id` | SDK       | 30-min timeout          | Groups related activity        |
+| `user_id`    | Your app  | After identify()        | Links to your user system      |
 
 ## How It Works
 
@@ -88,6 +88,15 @@ Event: 10:00 AM → session_id: "abc..."
 Event: 10:15 AM → session_id: "abc..." (same session)
 Event: 10:25 AM → session_id: "abc..." (same session)
 ```
+
+### localStorage Persistence
+
+Both IDs are stored in localStorage to survive page refreshes:
+
+- `beacon_anon_id`: The anonymous UUID (persisted forever)
+- `beacon_session`: JSON object `{id: "uuid", timestamp: 1234567890}`
+
+The session timestamp is updated on every SDK activity (track, identify, page). On page load, if the stored session is less than 30 minutes old, it's reused; otherwise, a new session is created.
 
 ## Database Schema
 

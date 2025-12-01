@@ -273,7 +273,19 @@ The SDK automatically reconnects with exponential backoff:
 
 ### Session Management
 
-Sessions automatically rotate after 30 minutes of inactivity. Each session gets a new UUID while the anonymous ID persists.
+The SDK uses localStorage to persist identity across page loads:
+
+- **Anonymous ID (`beacon_anon_id`)**: Generated once and persisted forever. Identifies the browser/device.
+- **Session ID (`beacon_session`)**: Persisted with a 30-minute inactivity timeout. Stored as `{id, timestamp}`.
+
+Sessions automatically rotate after 30 minutes of inactivity. Each session gets a new UUID while the anonymous ID persists. Activity (track, identify, page) extends the session timeout.
+
+```
+Page load at 10:00 → session_id: "abc..." (new or restored from localStorage)
+track() at 10:15   → session_id: "abc..." (same session, timeout extended)
+Page refresh 10:20 → session_id: "abc..." (restored from localStorage)
+Idle until 11:00   → session_id: "xyz..." (new session, 30+ min inactivity)
+```
 
 ## SSR Support
 

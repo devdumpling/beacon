@@ -133,8 +133,9 @@ self.onmessage = (e) => {
 
   if (t === "init") {
     config = { url: e.data.url, apiKey: e.data.apiKey };
-    anonId = uuid();
-    sessionId = uuid();
+    // Use IDs provided by main thread (localStorage persisted) or generate new ones
+    anonId = e.data.anonId || uuid();
+    sessionId = e.data.sessionId || uuid();
     connect();
     return;
   }

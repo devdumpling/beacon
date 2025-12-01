@@ -131,8 +131,45 @@ export function getMockWebSocket(): MockWebSocket | null {
     .__mockWebSocket as MockWebSocket;
 }
 
+// Mock localStorage
+class MockLocalStorage {
+  private store: Map<string, string> = new Map();
+
+  getItem(key: string): string | null {
+    return this.store.get(key) ?? null;
+  }
+
+  setItem(key: string, value: string): void {
+    this.store.set(key, value);
+  }
+
+  removeItem(key: string): void {
+    this.store.delete(key);
+  }
+
+  clear(): void {
+    this.store.clear();
+  }
+
+  get length(): number {
+    return this.store.size;
+  }
+
+  key(index: number): string | null {
+    return Array.from(this.store.keys())[index] ?? null;
+  }
+}
+
+const mockLocalStorage = new MockLocalStorage();
+vi.stubGlobal("localStorage", mockLocalStorage);
+
+export function getMockLocalStorage(): MockLocalStorage {
+  return mockLocalStorage;
+}
+
 // Reset mocks between tests
 beforeEach(() => {
   (globalThis as Record<string, unknown>).__mockWorker = null;
   (globalThis as Record<string, unknown>).__mockWebSocket = null;
+  mockLocalStorage.clear();
 });
