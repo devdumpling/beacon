@@ -123,6 +123,7 @@ just lint             # Lint and format
 | [API Reference](./api.md)           | Server endpoints and architecture |
 | [WebSocket Protocol](./protocol.md) | Wire protocol specification       |
 | [Identity Tracking](./identity.md)  | User identification system        |
+| [Benchmarking](./bench.md)          | Performance benchmarks            |
 
 ## Environment
 
