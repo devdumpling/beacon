@@ -49,11 +49,12 @@ async function getLoadTestStats(): Promise<LoadTestStats[]> {
 }
 
 async function getRecentEventCount(minutes: number = 10): Promise<number> {
+  const cutoff = new Date(Date.now() - minutes * 60 * 1000);
   const [result] = await sql<[{ count: number }]>`
     SELECT COUNT(*)::int as count
     FROM events
     WHERE event_name LIKE 'load_test%'
-    AND timestamp > NOW() - INTERVAL '${minutes} minutes'
+    AND timestamp > ${cutoff}
   `;
   return result.count;
 }
