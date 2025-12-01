@@ -97,13 +97,13 @@ async function main() {
   console.log(`${BOLD}Bundle Sizes${RESET}`);
   console.log("-".repeat(50));
   console.log(
-    `${"File".padEnd(25)} ${"Minified".padStart(10)} ${"Gzipped".padStart(10)}`
+    `${"File".padEnd(25)} ${"Minified".padStart(10)} ${"Gzipped".padStart(10)}`,
   );
   console.log("-".repeat(50));
 
   for (const result of results) {
     console.log(
-      `${result.file.padEnd(25)} ${formatBytes(result.minified).padStart(10)} ${formatBytes(result.gzipped).padStart(10)}`
+      `${result.file.padEnd(25)} ${formatBytes(result.minified).padStart(10)} ${formatBytes(result.gzipped).padStart(10)}`,
     );
   }
   console.log("-".repeat(50));
@@ -113,7 +113,7 @@ async function main() {
   const totalGzipped = results.reduce((sum, r) => sum + r.gzipped, 0);
 
   console.log(
-    `${BOLD}${"Total".padEnd(25)}${RESET} ${formatBytes(totalMinified).padStart(10)} ${formatBytes(totalGzipped).padStart(10)}`
+    `${BOLD}${"Total".padEnd(25)}${RESET} ${formatBytes(totalMinified).padStart(10)} ${formatBytes(totalGzipped).padStart(10)}`,
   );
   console.log();
 
@@ -128,7 +128,7 @@ async function main() {
     const workerPass = workerResult.gzipped <= WORKER_GZIP_THRESHOLD;
     const status = workerPass ? `${GREEN}PASS${RESET}` : `${RED}FAIL${RESET}`;
     console.log(
-      `Worker gzipped: ${formatBytes(workerResult.gzipped)} / ${formatBytes(WORKER_GZIP_THRESHOLD)} ${status}`
+      `Worker gzipped: ${formatBytes(workerResult.gzipped)} / ${formatBytes(WORKER_GZIP_THRESHOLD)} ${status}`,
     );
     if (!workerPass) failed = true;
   }
@@ -136,7 +136,7 @@ async function main() {
   const totalPass = totalGzipped <= TOTAL_GZIP_THRESHOLD;
   const totalStatus = totalPass ? `${GREEN}PASS${RESET}` : `${RED}FAIL${RESET}`;
   console.log(
-    `Total gzipped:  ${formatBytes(totalGzipped)} / ${formatBytes(TOTAL_GZIP_THRESHOLD)} ${totalStatus}`
+    `Total gzipped:  ${formatBytes(totalGzipped)} / ${formatBytes(TOTAL_GZIP_THRESHOLD)} ${totalStatus}`,
   );
   if (!totalPass) failed = true;
 
@@ -145,7 +145,7 @@ async function main() {
   if (failed) {
     console.log(`${RED}${BOLD}BENCHMARK FAILED${RESET}`);
     console.log(
-      `${DIM}SDK bundles exceed size thresholds. Consider optimizing.${RESET}`
+      `${DIM}SDK bundles exceed size thresholds. Consider optimizing.${RESET}`,
     );
     process.exit(1);
   } else {

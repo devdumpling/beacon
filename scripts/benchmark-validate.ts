@@ -107,7 +107,9 @@ async function main() {
 
   if (stats.length === 0) {
     console.log(`${YELLOW}No load test events found in database${RESET}`);
-    console.log(`${DIM}Run load tests first: k6 run scripts/load-test.k6.js${RESET}`);
+    console.log(
+      `${DIM}Run load tests first: k6 run scripts/load-test.k6.js${RESET}`,
+    );
     await sql.end();
     return;
   }
@@ -115,7 +117,7 @@ async function main() {
   console.log(`${BOLD}Load Test Events${RESET}`);
   console.log("-".repeat(50));
   console.log(
-    `${"Event Name".padEnd(25)} ${"Count".padStart(10)} ${"Time Range".padStart(12)}`
+    `${"Event Name".padEnd(25)} ${"Count".padStart(10)} ${"Time Range".padStart(12)}`,
   );
   console.log("-".repeat(50));
 
@@ -124,14 +126,19 @@ async function main() {
     const duration =
       (new Date(stat.latest).getTime() - new Date(stat.earliest).getTime()) /
       1000;
-    const durationStr = duration > 60 ? `${(duration / 60).toFixed(1)}m` : `${duration.toFixed(0)}s`;
+    const durationStr =
+      duration > 60
+        ? `${(duration / 60).toFixed(1)}m`
+        : `${duration.toFixed(0)}s`;
     console.log(
-      `${stat.event_name.padEnd(25)} ${stat.count.toString().padStart(10)} ${durationStr.padStart(12)}`
+      `${stat.event_name.padEnd(25)} ${stat.count.toString().padStart(10)} ${durationStr.padStart(12)}`,
     );
     totalEvents += stat.count;
   }
   console.log("-".repeat(50));
-  console.log(`${BOLD}${"Total".padEnd(25)}${RESET} ${totalEvents.toString().padStart(10)}`);
+  console.log(
+    `${BOLD}${"Total".padEnd(25)}${RESET} ${totalEvents.toString().padStart(10)}`,
+  );
   console.log();
 
   // Recent events (last 10 minutes)
@@ -149,7 +156,7 @@ async function main() {
       if (duration > 0) {
         const throughput = burstEvents.count / duration;
         console.log(
-          `${BOLD}Burst Throughput:${RESET} ${throughput.toFixed(1)} events/sec`
+          `${BOLD}Burst Throughput:${RESET} ${throughput.toFixed(1)} events/sec`,
         );
       }
     }
