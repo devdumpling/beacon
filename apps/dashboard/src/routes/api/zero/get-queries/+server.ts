@@ -17,10 +17,11 @@ const validatedQueries = Object.fromEntries(
   queries.map((q) => [q.queryName, withValidation(q)]),
 );
 
-export const POST: RequestHandler = async ({ request }) => {
-  // For now, no auth - pass null context
-  // When auth is added, extract from locals.user
-  const authContext: AuthContext = null;
+export const POST: RequestHandler = async ({ request, locals }) => {
+  // Extract user from session (set by hooks.server.ts)
+  const authContext: AuthContext = locals.user
+    ? { userId: locals.user.id }
+    : null;
 
   // Query resolver function with auth context in closure
   function getQuery(name: string, args: readonly unknown[]) {

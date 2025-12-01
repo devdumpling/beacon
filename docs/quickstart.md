@@ -94,7 +94,7 @@ function MyApp() {
 
 Open http://localhost:5173 to see tracked events and manage feature flags.
 
-> **WIP**: Dashboard authentication is not yet implemented. Currently open access for local development.
+> **Note**: You'll need to register an account on first visit. Go to `/register` to create credentials.
 
 ---
 

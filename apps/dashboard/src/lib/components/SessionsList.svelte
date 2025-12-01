@@ -5,7 +5,8 @@
 
   let { projectId }: { projectId: string } = $props();
 
-  const sessionsQuery = useQuery<Session>(recentSessions(projectId, 100));
+  // Use getter function so query re-runs if projectId changes
+  const sessionsQuery = useQuery<Session>(() => recentSessions(projectId, 100));
 
   function formatTimestamp(ts: number): string {
     return new Date(ts).toLocaleString();

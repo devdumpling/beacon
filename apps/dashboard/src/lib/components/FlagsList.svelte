@@ -6,7 +6,8 @@
   let { projectId }: { projectId: string } = $props();
 
   const zero = getZero();
-  const flagsQuery = useQuery<Flag>(flagsForProject(projectId));
+  // Use getter function so query re-runs if projectId changes
+  const flagsQuery = useQuery<Flag>(() => flagsForProject(projectId));
 
   // Form state
   let newFlagKey = $state("");
