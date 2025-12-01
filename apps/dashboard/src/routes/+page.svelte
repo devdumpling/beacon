@@ -1,5 +1,14 @@
 <script lang="ts">
-  let { data } = $props();
+  import { useQuery } from "$lib/zero/client.svelte";
+  import { firstProject } from "$lib/zero/queries";
+  import type { Project } from "$lib/zero/schema";
+  import OverviewDashboard from "$lib/components/OverviewDashboard.svelte";
+
+  // Get the first project using synced query
+  const projectQuery = useQuery<Project>(firstProject());
+
+  // Derive project ID reactively
+  const projectId = $derived(projectQuery.data?.[0]?.id);
 </script>
 
 <svelte:head>
@@ -7,56 +16,20 @@
 </svelte:head>
 
 <div class="space-y-8">
-  <h2 class="text-2xl font-semibold">Overview</h2>
-  
-  <div class="grid grid-cols-3 gap-6">
-    <div class="bg-white rounded-lg shadow p-6">
-      <div class="text-sm text-gray-500">Events (7d)</div>
-      <div class="text-3xl font-bold">{data.eventCount.toLocaleString()}</div>
-    </div>
-    
-    <div class="bg-white rounded-lg shadow p-6">
-      <div class="text-sm text-gray-500">Sessions (7d)</div>
-      <div class="text-3xl font-bold">{data.sessionCount.toLocaleString()}</div>
-    </div>
-    
-    <div class="bg-white rounded-lg shadow p-6">
-      <div class="text-sm text-gray-500">Active Flags</div>
-      <div class="text-3xl font-bold">{data.flagCount}</div>
-    </div>
+  <div class="flex items-center justify-between">
+    <h2 class="text-2xl font-semibold">Overview</h2>
+    {#if projectQuery.loading}
+      <span class="text-sm text-gray-500">Syncing...</span>
+    {:else}
+      <span class="text-sm text-green-600">Live</span>
+    {/if}
   </div>
-  
-  <div class="bg-white rounded-lg shadow">
-    <div class="p-4 border-b">
-      <h3 class="font-semibold">Recent Events</h3>
-    </div>
-    <div class="p-4">
-      {#if data.recentEvents.length === 0}
-        <p class="text-gray-500">No events yet. Integrate the SDK to start tracking.</p>
-      {:else}
-        <table class="w-full">
-          <thead>
-            <tr class="text-left text-sm text-gray-500">
-              <th class="pb-2">Event</th>
-              <th class="pb-2">Time</th>
-              <th class="pb-2">Session</th>
-            </tr>
-          </thead>
-          <tbody>
-            {#each data.recentEvents as event}
-              <tr class="border-t">
-                <td class="py-2 font-mono text-sm">{event.event_name}</td>
-                <td class="py-2 text-sm text-gray-500">
-                  {new Date(event.timestamp).toLocaleString()}
-                </td>
-                <td class="py-2 text-sm text-gray-400 font-mono">
-                  {event.session_id.slice(0, 8)}...
-                </td>
-              </tr>
-            {/each}
-          </tbody>
-        </table>
-      {/if}
-    </div>
-  </div>
+
+  {#if projectQuery.loading}
+    <div class="text-gray-500">Loading project...</div>
+  {:else if !projectId}
+    <div class="text-gray-500">No project found. Create a project to get started.</div>
+  {:else}
+    <OverviewDashboard {projectId} />
+  {/if}
 </div>
