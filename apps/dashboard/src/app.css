@@ -1,25 +1,23 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 /* Rose Pine Moon Color Palette
    https://rosepinetheme.com/palette/ */
-:root {
-  --rp-base: #232136;
-  --rp-surface: #2a273f;
-  --rp-overlay: #393552;
-  --rp-muted: #6e6a86;
-  --rp-subtle: #908caa;
-  --rp-text: #e0def4;
-  --rp-love: #eb6f92;
-  --rp-gold: #f6c177;
-  --rp-rose: #ea9a97;
-  --rp-pine: #3e8fb0;
-  --rp-foam: #9ccfd8;
-  --rp-iris: #c4a7e7;
+@theme {
+  --color-rp-base: #232136;
+  --color-rp-surface: #2a273f;
+  --color-rp-overlay: #393552;
+  --color-rp-muted: #6e6a86;
+  --color-rp-subtle: #908caa;
+  --color-rp-text: #e0def4;
+  --color-rp-love: #eb6f92;
+  --color-rp-gold: #f6c177;
+  --color-rp-rose: #ea9a97;
+  --color-rp-pine: #3e8fb0;
+  --color-rp-foam: #9ccfd8;
+  --color-rp-iris: #c4a7e7;
 }
 
 html,
 body {
-  background-color: var(--rp-base);
+  background-color: var(--color-rp-base);
 }

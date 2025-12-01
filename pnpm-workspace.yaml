@@ -4,3 +4,52 @@ packages:
 
 onlyBuiltDependencies:
   - esbuild
+
+catalog:
+  # TypeScript
+  typescript: ^5.9.3
+  tsup: ^8.5.1
+  tsx: ^4.21.0
+  "@types/node": ^24.10.1
+  "@types/react": ^19.2.7
+  "@types/react-dom": ^19.2.3
+
+  # Build
+  vite: ^7.2.6
+  "@vitejs/plugin-react": ^5.1.1
+
+  # Test
+  vitest: ^4.0.14
+  "@vitest/coverage-v8": ^4.0.14
+  jsdom: ^27.2.0
+
+  # Lint/Format
+  eslint: ^9.39.1
+  "@eslint/js": ^9.39.1
+  prettier: ^3.7.3
+  typescript-eslint: ^8.48.0
+  globals: ^16.5.0
+
+  # Svelte
+  svelte: ^5.45.3
+  svelte-check: ^4.3.4
+  "@sveltejs/kit": ^2.49.0
+  "@sveltejs/adapter-node": ^5.4.0
+  "@sveltejs/vite-plugin-svelte": ^6.2.1
+  eslint-plugin-svelte: ^3.13.0
+
+  # Tailwind
+  tailwindcss: ^4.1.17
+  "@tailwindcss/vite": ^4.1.17
+  postcss: ^8.5.6
+
+  # React
+  react: ^19.2.0
+  react-dom: ^19.2.0
+
+  # Database
+  postgres: ^3.4.7
+
+  # Utilities
+  zod: ^4.1.13
+  dotenv-cli: ^11.0.0

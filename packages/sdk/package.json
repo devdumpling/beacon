@@ -24,13 +24,13 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
-    "@types/react": "^18.3.0",
-    "@vitest/coverage-v8": "^4.0.14",
-    "jsdom": "^27.2.0",
-    "react": "^18.3.0",
-    "tsup": "^8.3.0",
-    "typescript": "^5.7.0",
-    "vitest": "^4.0.14"
+    "@types/react": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "jsdom": "catalog:",
+    "react": "catalog:",
+    "tsup": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   },
   "peerDependencies": {
     "react": ">=18.0.0"
