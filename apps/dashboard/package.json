@@ -36,6 +36,9 @@
     "@lucia-auth/adapter-postgresql": "^3.1.2",
     "@node-rs/argon2": "^2.0.2",
     "@rocicorp/zero": "^0.24.3000000000",
+    "d3-scale": "^4.0.2",
+    "d3-shape": "^3.2.0",
+    "layerchart": "2.0.0-next.43",
     "lucia": "^3.2.2",
     "postgres": "catalog:",
     "zod": "catalog:"

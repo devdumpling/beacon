@@ -21,3 +21,25 @@ html,
 body {
   background-color: var(--color-rp-base);
 }
+
+/* LayerChart axis styling */
+.lc-axis text {
+  fill: var(--color-rp-subtle);
+  stroke: none;
+  font-size: 12px;
+}
+
+.lc-axis line,
+.lc-axis path {
+  stroke: var(--color-rp-overlay);
+}
+
+/* LayerChart tooltip styling */
+.lc-tooltip {
+  background-color: var(--color-rp-surface);
+  border: 1px solid var(--color-rp-overlay);
+  border-radius: 4px;
+  padding: 8px;
+  color: var(--color-rp-text);
+  font-size: 12px;
+}
