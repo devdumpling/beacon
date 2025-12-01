@@ -1,0 +1,78 @@
+name: Load Tests
+
+on:
+  pull_request:
+    branches: [main]
+
+env:
+  DATABASE_URL: postgres://beacon:beacon@localhost:5432/beacon?sslmode=disable
+  PORT: 4000
+
+jobs:
+  load-test:
+    name: k6 Load Test
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: beacon
+          POSTGRES_PASSWORD: beacon
+          POSTGRES_DB: beacon
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U beacon"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: extractions/setup-just@v2
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "pnpm"
+
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: "28"
+          gleam-version: "1.13"
+          rebar3-version: "3.25"
+
+      - uses: grafana/setup-k6-action@v1
+
+      - name: Install dbmate
+        run: |
+          curl -fsSL -o /usr/local/bin/dbmate https://github.com/amacneil/dbmate/releases/latest/download/dbmate-linux-amd64
+          chmod +x /usr/local/bin/dbmate
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Download Gleam deps
+        run: cd apps/api && gleam deps download
+
+      - name: Run migrations
+        run: just db-migrate
+
+      - name: Build API
+        run: just build-api
+
+      - name: Start API server
+        run: |
+          cd apps/api && gleam run -m beacon &
+          for i in {1..30}; do
+            curl -s http://localhost:4000/health && break
+            sleep 1
+          done
+
+      - name: Run load test
+        run: k6 run --quiet scripts/load-test.k6.js
+
+      - name: Validate persistence
+        run: just bench-validate

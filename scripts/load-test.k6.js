@@ -100,7 +100,7 @@ export default function () {
             event: "load_test_burst",
             props: JSON.stringify({ seq: eventsSent, ts: sendStart }),
             ts: sendStart,
-          })
+          }),
         );
         eventsSent++;
         eventsDelivered.add(1);
@@ -129,7 +129,7 @@ export default function () {
             event: "load_test_scaling",
             props: JSON.stringify({ seq: eventsSent, vu: __VU }),
             ts: sendStart,
-          })
+          }),
         );
         eventsSent++;
         eventsDelivered.add(1);
@@ -149,7 +149,7 @@ export default function () {
             type: "identify",
             userId: `load_user_${__VU}`,
             traits: JSON.stringify({ loadTest: true, vu: __VU }),
-          })
+          }),
         );
       }, 1000);
 
@@ -194,10 +194,8 @@ export function handleSummary(data) {
     timestamp: new Date().toISOString(),
     metrics: {
       events_delivered: data.metrics.events_delivered?.values?.count || 0,
-      event_send_time_p95:
-        data.metrics.event_send_time?.values?.["p(95)"] || 0,
-      event_send_time_p99:
-        data.metrics.event_send_time?.values?.["p(99)"] || 0,
+      event_send_time_p95: data.metrics.event_send_time?.values?.["p(95)"] || 0,
+      event_send_time_p99: data.metrics.event_send_time?.values?.["p(99)"] || 0,
       ping_rtt_avg: data.metrics.ping_rtt?.values?.avg || 0,
       ping_rtt_p95: data.metrics.ping_rtt?.values?.["p(95)"] || 0,
       connection_time_avg: data.metrics.connection_time?.values?.avg || 0,

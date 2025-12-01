@@ -127,8 +127,7 @@ export function handleSummary(data) {
       connection_time_avg: data.metrics.connection_time?.values?.avg || 0,
       connection_time_p95: data.metrics.connection_time?.values?.["p(95)"] || 0,
       connection_time_p99: data.metrics.connection_time?.values?.["p(99)"] || 0,
-      peak_active:
-        data.metrics.active_connections?.values?.max || successful,
+      peak_active: data.metrics.active_connections?.values?.max || successful,
     },
     thresholds: {
       passed: Object.values(data.thresholds || {}).every((t) => t.ok),
