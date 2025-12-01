@@ -36,6 +36,10 @@ dev-example-vanilla:
 dev-example-react:
     pnpm --filter example-react dev
 
+# Start Zero cache server (for dashboard real-time sync)
+dev-zero:
+    pnpm --filter dashboard zero
+
 # ─────────────────────────────────────────────────────────────
 # Build
 # ─────────────────────────────────────────────────────────────

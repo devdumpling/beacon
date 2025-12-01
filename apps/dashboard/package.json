@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "test": "vitest",
     "lint": "eslint .",
-    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "zero": "dotenv -- zero-cache-dev --schema-path=src/lib/zero/schema.ts"
   },
   "devDependencies": {
     "@sveltejs/adapter-node": "^5.2.0",
@@ -17,6 +18,7 @@
     "@sveltejs/vite-plugin-svelte": "^4.0.0",
     "@types/node": "^22.0.0",
     "autoprefixer": "^10.4.20",
+    "dotenv-cli": "^11.0.0",
     "eslint": "^9.15.0",
     "postcss": "^8.4.49",
     "svelte": "^5.2.0",
