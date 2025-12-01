@@ -8,13 +8,14 @@
  */
 
 import { schema, type Schema } from "./schema";
+import { createMutators, type Mutators } from "./mutators";
 import { Zero, type Query } from "@rocicorp/zero";
 import { getContext, setContext, untrack } from "svelte";
 
 // Use string key instead of Symbol for HMR stability (Symbols are unique per module load)
 const ZERO_KEY = "__zero_client__";
 
-export type ZeroClient = Zero<Schema>;
+export type ZeroClient = Zero<Schema, Mutators>;
 
 // Module-level fallback for HMR scenarios where context may be lost
 let _zeroInstance: ZeroClient | null = null;
@@ -31,10 +32,11 @@ export function createZero(
   userID: string = "dashboard-admin",
   server: string = "http://localhost:4848"
 ): ZeroClient {
-  const zero = new Zero<Schema>({
+  const zero = new Zero<Schema, Mutators>({
     server,
     schema,
     userID,
+    mutators: createMutators(),
   });
 
   // Store at module level for HMR resilience

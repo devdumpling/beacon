@@ -111,7 +111,7 @@ const baseSchema = createSchema({
 /**
  * Schema with legacy features disabled.
  * Queries go through /api/zero/get-queries
- * Mutations go through /api/zero/push (when implemented)
+ * Mutations go through custom mutators
  */
 export const schema = {
   ...baseSchema,

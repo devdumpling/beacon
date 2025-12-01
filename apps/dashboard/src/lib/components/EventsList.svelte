@@ -34,12 +34,12 @@
     return new Date(ts).toLocaleString();
   }
 
-  function formatProperties(props: string | null): string {
+  function formatProperties(props: Record<string, unknown> | null | undefined): string {
     if (!props) return "{}";
     try {
-      return JSON.stringify(JSON.parse(props), null, 2);
+      return JSON.stringify(props, null, 2);
     } catch {
-      return props;
+      return String(props);
     }
   }
 

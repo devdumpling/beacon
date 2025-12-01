@@ -14,25 +14,21 @@
   let creating = $state(false);
 
   async function toggleFlag(id: string, currentEnabled: boolean) {
-    await zero.mutate.flags.update({
+    await zero.mutate.flags.toggle({
       id,
       enabled: !currentEnabled,
-      updated_at: Date.now(),
     });
   }
 
   async function createFlag() {
     if (!newFlagKey || !newFlagName) return;
     creating = true;
-    const now = Date.now();
-    await zero.mutate.flags.insert({
+    await zero.mutate.flags.create({
       id: crypto.randomUUID(),
       project_id: projectId,
       key: newFlagKey,
       name: newFlagName,
       enabled: false,
-      created_at: now,
-      updated_at: now,
     });
     newFlagKey = "";
     newFlagName = "";
