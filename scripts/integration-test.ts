@@ -465,6 +465,44 @@ async function sessionTests() {
       "last_event_at should be updated on reconnect",
     );
   });
+
+  await test("Session event_count increments with multiple events", async () => {
+    const sessionId = crypto.randomUUID();
+    const anonId = crypto.randomUUID();
+
+    const ws = await connectWs({
+      key: TEST_API_KEY,
+      session: sessionId,
+      anon: anonId,
+    });
+
+    // Send 5 events
+    for (let i = 0; i < 5; i++) {
+      ws.send(
+        JSON.stringify({
+          type: "event",
+          event: `count_test_${i}`,
+          props: "{}",
+          ts: Date.now() + i,
+        }),
+      );
+      // Small delay to ensure sequential processing
+      await new Promise((r) => setTimeout(r, 50));
+    }
+
+    // Wait briefly for session updates (no need for full flush timer)
+    await new Promise((r) => setTimeout(r, 200));
+
+    const session = await querySession(sessionId);
+    assert(session !== null, "Session should exist");
+    assertEqual(
+      session!.event_count,
+      5,
+      `Expected event_count of 5, got ${session!.event_count}`,
+    );
+
+    ws.close();
+  });
 }
 
 // ─────────────────────────────────────────────────────────────
