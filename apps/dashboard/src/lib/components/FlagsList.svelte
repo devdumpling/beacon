@@ -46,27 +46,27 @@
 </script>
 
 <!-- Create Flag -->
-<div class="bg-white rounded-lg shadow">
-  <div class="p-4 border-b">
-    <h3 class="font-semibold">Create Flag</h3>
+<div class="bg-rp-surface rounded-lg border border-rp-overlay">
+  <div class="p-4 border-b border-rp-overlay">
+    <h3 class="font-semibold text-rp-text">Create Flag</h3>
   </div>
   <div class="p-4 flex gap-4">
     <input
       type="text"
       bind:value={newFlagKey}
       placeholder="flag_key"
-      class="flex-1 px-3 py-2 border rounded font-mono text-sm"
+      class="flex-1 px-3 py-2 bg-rp-base border border-rp-overlay rounded font-mono text-sm text-rp-text placeholder-rp-muted focus:border-rp-iris focus:outline-none"
     />
     <input
       type="text"
       bind:value={newFlagName}
       placeholder="Human readable name"
-      class="flex-1 px-3 py-2 border rounded"
+      class="flex-1 px-3 py-2 bg-rp-base border border-rp-overlay rounded text-rp-text placeholder-rp-muted focus:border-rp-iris focus:outline-none"
     />
     <button
       onclick={createFlag}
       disabled={creating || !newFlagKey || !newFlagName}
-      class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+      class="px-4 py-2 bg-rp-iris text-rp-base rounded hover:bg-rp-foam disabled:opacity-50"
     >
       {creating ? "Creating..." : "Create"}
     </button>
@@ -74,17 +74,17 @@
 </div>
 
 <!-- Flags Table -->
-<div class="bg-white rounded-lg shadow">
+<div class="bg-rp-surface rounded-lg border border-rp-overlay">
   {#if flagsQuery.loading}
-    <div class="p-8 text-center text-gray-500">Loading flags...</div>
+    <div class="p-8 text-center text-rp-muted">Loading flags...</div>
   {:else if flagsQuery.data.length === 0}
-    <div class="p-8 text-center text-gray-500">
+    <div class="p-8 text-center text-rp-muted">
       No flags yet. Create one above.
     </div>
   {:else}
     <table class="w-full">
-      <thead class="border-b">
-        <tr class="text-left">
+      <thead class="border-b border-rp-overlay">
+        <tr class="text-left text-rp-muted">
           <th class="p-4">Key</th>
           <th class="p-4">Name</th>
           <th class="p-4">Status</th>
@@ -94,26 +94,26 @@
       </thead>
       <tbody>
         {#each flagsQuery.data as flag (flag.id)}
-          <tr class="border-b last:border-0">
-            <td class="p-4 font-mono text-sm">{flag.key}</td>
-            <td class="p-4">{flag.name}</td>
+          <tr class="border-b border-rp-overlay last:border-0">
+            <td class="p-4 font-mono text-sm text-rp-text">{flag.key}</td>
+            <td class="p-4 text-rp-text">{flag.name}</td>
             <td class="p-4">
               <button
                 onclick={() => toggleFlag(flag.id, flag.enabled)}
-                class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors {flag.enabled ? 'bg-blue-600' : 'bg-gray-200'}"
+                class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors {flag.enabled ? 'bg-rp-pine' : 'bg-rp-overlay'}"
               >
                 <span
-                  class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform {flag.enabled ? 'translate-x-6' : 'translate-x-1'}"
+                  class="inline-block h-4 w-4 transform rounded-full bg-rp-text transition-transform {flag.enabled ? 'translate-x-6' : 'translate-x-1'}"
                 />
               </button>
             </td>
-            <td class="p-4 text-gray-500 text-sm">
+            <td class="p-4 text-rp-subtle text-sm">
               {formatTimestamp(flag.updated_at)}
             </td>
             <td class="p-4">
               <button
                 onclick={() => deleteFlag(flag.id)}
-                class="text-red-500 hover:text-red-700 text-sm"
+                class="text-rp-love hover:text-rp-rose text-sm"
               >
                 Delete
               </button>

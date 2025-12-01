@@ -49,18 +49,18 @@
 </script>
 
 <!-- Filter -->
-<div class="bg-white rounded-lg shadow">
+<div class="bg-rp-surface rounded-lg border border-rp-overlay">
   <div class="p-4 flex gap-4 items-center">
     <input
       type="text"
       bind:value={filterName}
       placeholder="Filter by event name..."
-      class="flex-1 px-3 py-2 border rounded text-sm"
+      class="flex-1 px-3 py-2 bg-rp-base border border-rp-overlay rounded text-sm text-rp-text placeholder-rp-muted focus:border-rp-iris focus:outline-none"
     />
     {#if filterName}
       <button
         onclick={() => (filterName = "")}
-        class="px-3 py-2 text-sm text-gray-500 hover:text-gray-700"
+        class="px-3 py-2 text-sm text-rp-muted hover:text-rp-text"
       >
         Clear
       </button>
@@ -69,11 +69,11 @@
 </div>
 
 <!-- Events Table -->
-<div class="bg-white rounded-lg shadow">
+<div class="bg-rp-surface rounded-lg border border-rp-overlay">
   {#if eventsQuery.loading}
-    <div class="p-8 text-center text-gray-500">Loading events...</div>
+    <div class="p-8 text-center text-rp-muted">Loading events...</div>
   {:else if filteredEvents.length === 0}
-    <div class="p-8 text-center text-gray-500">
+    <div class="p-8 text-center text-rp-muted">
       {#if filterName}
         No events match "{filterName}"
       {:else}
@@ -82,8 +82,8 @@
     </div>
   {:else}
     <table class="w-full">
-      <thead class="border-b bg-gray-50">
-        <tr class="text-left text-sm text-gray-500">
+      <thead class="border-b border-rp-overlay bg-rp-overlay/30">
+        <tr class="text-left text-sm text-rp-muted">
           <th class="p-4">Time</th>
           <th class="p-4">Event</th>
           <th class="p-4">Session</th>
@@ -93,35 +93,35 @@
       </thead>
       <tbody>
         {#each filteredEvents as event (event.id)}
-          <tr class="border-b last:border-0 hover:bg-gray-50">
-            <td class="p-4 text-sm text-gray-500 whitespace-nowrap">
+          <tr class="border-b border-rp-overlay last:border-0 hover:bg-rp-overlay/30">
+            <td class="p-4 text-sm text-rp-subtle whitespace-nowrap">
               {formatTimestamp(event.timestamp)}
             </td>
-            <td class="p-4 font-mono text-sm">{event.event_name}</td>
+            <td class="p-4 font-mono text-sm text-rp-text">{event.event_name}</td>
             <td class="p-4">
               <a
                 href="/sessions/{event.session_id}"
-                class="font-mono text-sm text-blue-600 hover:underline"
+                class="font-mono text-sm text-rp-iris hover:underline"
               >
                 {event.session_id.slice(0, 8)}...
               </a>
             </td>
-            <td class="p-4 text-sm text-gray-500">
+            <td class="p-4 text-sm text-rp-subtle">
               {event.user_id ?? (event.anon_id ? event.anon_id.slice(0, 8) + "..." : "-")}
             </td>
             <td class="p-4">
               <button
                 onclick={() => toggleExpanded(event.id)}
-                class="text-sm text-gray-500 hover:text-gray-700"
+                class="text-sm text-rp-muted hover:text-rp-text"
               >
                 {expandedId === event.id ? "Hide" : "Show"}
               </button>
             </td>
           </tr>
           {#if expandedId === event.id}
-            <tr class="bg-gray-50">
+            <tr class="bg-rp-overlay/30">
               <td colspan="5" class="p-4">
-                <pre class="text-xs font-mono bg-gray-100 p-3 rounded overflow-x-auto">{formatProperties(event.properties)}</pre>
+                <pre class="text-xs font-mono bg-rp-base text-rp-text p-3 rounded overflow-x-auto">{formatProperties(event.properties)}</pre>
               </td>
             </tr>
           {/if}
@@ -130,10 +130,10 @@
     </table>
 
     {#if hasMore}
-      <div class="p-4 border-t text-center">
+      <div class="p-4 border-t border-rp-overlay text-center">
         <button
           onclick={loadMore}
-          class="px-4 py-2 text-sm text-blue-600 hover:text-blue-700"
+          class="px-4 py-2 text-sm text-rp-iris hover:text-rp-foam"
         >
           Load more events ({eventsQuery.data.length - displayLimit} remaining)
         </button>

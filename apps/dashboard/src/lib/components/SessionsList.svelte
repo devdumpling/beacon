@@ -23,17 +23,17 @@
   }
 </script>
 
-<div class="bg-white rounded-lg shadow">
+<div class="bg-rp-surface rounded-lg border border-rp-overlay">
   {#if sessionsQuery.loading}
-    <div class="p-8 text-center text-gray-500">Loading sessions...</div>
+    <div class="p-8 text-center text-rp-muted">Loading sessions...</div>
   {:else if sessionsQuery.data.length === 0}
-    <div class="p-8 text-center text-gray-500">
+    <div class="p-8 text-center text-rp-muted">
       No sessions yet. Start tracking with the SDK.
     </div>
   {:else}
     <table class="w-full">
-      <thead class="border-b bg-gray-50">
-        <tr class="text-left text-sm text-gray-500">
+      <thead class="border-b border-rp-overlay bg-rp-overlay/30">
+        <tr class="text-left text-sm text-rp-muted">
           <th class="p-4">Session ID</th>
           <th class="p-4">User</th>
           <th class="p-4">Started</th>
@@ -43,25 +43,25 @@
       </thead>
       <tbody>
         {#each sessionsQuery.data as session (session.id)}
-          <tr class="border-b last:border-0 hover:bg-gray-50">
+          <tr class="border-b border-rp-overlay last:border-0 hover:bg-rp-overlay/30">
             <td class="p-4">
               <a
                 href="/sessions/{session.id}"
-                class="font-mono text-sm text-blue-600 hover:underline"
+                class="font-mono text-sm text-rp-iris hover:underline"
               >
                 {session.id.slice(0, 8)}...
               </a>
             </td>
-            <td class="p-4 text-sm text-gray-500">
+            <td class="p-4 text-sm text-rp-subtle">
               {session.user_id ?? (session.anon_id ? session.anon_id.slice(0, 8) + "..." : "-")}
             </td>
-            <td class="p-4 text-sm text-gray-500" title={formatTimestamp(session.started_at)}>
+            <td class="p-4 text-sm text-rp-subtle" title={formatTimestamp(session.started_at)}>
               {formatRelativeTime(session.started_at)}
             </td>
-            <td class="p-4 text-sm text-gray-500" title={formatTimestamp(session.last_event_at)}>
+            <td class="p-4 text-sm text-rp-subtle" title={formatTimestamp(session.last_event_at)}>
               {formatRelativeTime(session.last_event_at)}
             </td>
-            <td class="p-4 text-sm font-medium">
+            <td class="p-4 text-sm font-medium text-rp-text">
               {session.event_count}
             </td>
           </tr>

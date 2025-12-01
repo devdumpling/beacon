@@ -32,33 +32,33 @@
 </script>
 
 <div class="grid grid-cols-3 gap-6">
-  <div class="bg-white rounded-lg shadow p-6">
-    <div class="text-sm text-gray-500">Events (7d)</div>
-    <div class="text-3xl font-bold">
+  <div class="bg-rp-surface rounded-lg border border-rp-overlay p-6">
+    <div class="text-sm text-rp-muted">Events (7d)</div>
+    <div class="text-3xl font-bold text-rp-text">
       {#if loading}
-        <span class="text-gray-300">...</span>
+        <span class="text-rp-overlay">...</span>
       {:else}
         {eventCount.toLocaleString()}
       {/if}
     </div>
   </div>
 
-  <div class="bg-white rounded-lg shadow p-6">
-    <div class="text-sm text-gray-500">Sessions (7d)</div>
-    <div class="text-3xl font-bold">
+  <div class="bg-rp-surface rounded-lg border border-rp-overlay p-6">
+    <div class="text-sm text-rp-muted">Sessions (7d)</div>
+    <div class="text-3xl font-bold text-rp-text">
       {#if loading}
-        <span class="text-gray-300">...</span>
+        <span class="text-rp-overlay">...</span>
       {:else}
         {sessionCount.toLocaleString()}
       {/if}
     </div>
   </div>
 
-  <div class="bg-white rounded-lg shadow p-6">
-    <div class="text-sm text-gray-500">Active Flags</div>
-    <div class="text-3xl font-bold">
+  <div class="bg-rp-surface rounded-lg border border-rp-overlay p-6">
+    <div class="text-sm text-rp-muted">Active Flags</div>
+    <div class="text-3xl font-bold text-rp-text">
       {#if loading}
-        <span class="text-gray-300">...</span>
+        <span class="text-rp-overlay">...</span>
       {:else}
         {flagCount}
       {/if}
@@ -66,19 +66,19 @@
   </div>
 </div>
 
-<div class="bg-white rounded-lg shadow mt-6">
-  <div class="p-4 border-b">
-    <h3 class="font-semibold">Recent Events</h3>
+<div class="bg-rp-surface rounded-lg border border-rp-overlay mt-6">
+  <div class="p-4 border-b border-rp-overlay">
+    <h3 class="font-semibold text-rp-text">Recent Events</h3>
   </div>
   <div class="p-4">
     {#if loading}
-      <p class="text-gray-500">Loading events...</p>
+      <p class="text-rp-muted">Loading events...</p>
     {:else if recentEventsList.length === 0}
-      <p class="text-gray-500">No events yet. Integrate the SDK to start tracking.</p>
+      <p class="text-rp-muted">No events yet. Integrate the SDK to start tracking.</p>
     {:else}
       <table class="w-full">
         <thead>
-          <tr class="text-left text-sm text-gray-500">
+          <tr class="text-left text-sm text-rp-muted">
             <th class="pb-2">Event</th>
             <th class="pb-2">Time</th>
             <th class="pb-2">Session</th>
@@ -86,12 +86,12 @@
         </thead>
         <tbody>
           {#each recentEventsList as event}
-            <tr class="border-t">
-              <td class="py-2 font-mono text-sm">{event.event_name}</td>
-              <td class="py-2 text-sm text-gray-500">
+            <tr class="border-t border-rp-overlay">
+              <td class="py-2 font-mono text-sm text-rp-text">{event.event_name}</td>
+              <td class="py-2 text-sm text-rp-subtle">
                 {new Date(event.timestamp).toLocaleString()}
               </td>
-              <td class="py-2 text-sm text-gray-400 font-mono">
+              <td class="py-2 text-sm text-rp-muted font-mono">
                 {event.session_id.slice(0, 8)}...
               </td>
             </tr>
