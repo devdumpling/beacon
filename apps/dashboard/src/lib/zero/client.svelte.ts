@@ -5,6 +5,25 @@
  * Handles subscription lifecycle and cleanup automatically.
  *
  * Uses Svelte context for proper component tree integration.
+ *
+ * ## Reactive Parameters
+ *
+ * Query hooks support both static queries and getter functions for reactive params.
+ * Use getter functions when query parameters depend on reactive state:
+ *
+ * ```typescript
+ * // Static - query params never change
+ * const events = useQuery(recentEvents('project-123', 100));
+ *
+ * // Reactive - re-runs when `days` state changes
+ * let days = $state(7);
+ * const events = useQuery(() => eventsInWindow(projectId, days));
+ * ```
+ *
+ * Why getter functions? Svelte 5's `$effect` only tracks reactive values that are
+ * **synchronously read** during execution. By passing a getter, the function is
+ * called inside the effect, allowing Svelte to track dependencies like `days`.
+ * Without this, the query would capture `days = 7` at mount time and never update.
  */
 
 import { schema, type Schema } from "./schema";
