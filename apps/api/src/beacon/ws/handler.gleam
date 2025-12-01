@@ -102,6 +102,11 @@ pub fn handle(
               timestamp: ts,
             ),
           )
+          // Update session event_count and last_event_at
+          case sessions.touch(state.db, state.session_id) {
+            Ok(_) -> Nil
+            Error(_) -> Nil
+          }
           mist.continue(state)
         }
 

@@ -43,8 +43,8 @@ pub fn upsert(
 ) -> Result(Nil, pog.QueryError) {
   case
     pog.query(
-      "INSERT INTO sessions (id, project_id, anon_id, started_at, last_event_at)
-       VALUES ($1::uuid, $2::uuid, $3::uuid, NOW(), NOW())
+      "INSERT INTO sessions (id, project_id, anon_id, started_at, last_event_at, event_count)
+       VALUES ($1::uuid, $2::uuid, $3::uuid, NOW(), NOW(), 0)
        ON CONFLICT (id) DO UPDATE SET last_event_at = NOW()",
     )
     |> pog.parameter(pog.text(session_id))
