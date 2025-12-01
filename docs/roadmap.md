@@ -22,12 +22,12 @@ Beacon's path to a stable alpha release.
 - [ ] Dashboard authentication
 - [ ] Basic analytics visualizations
 
-### 📋 M2: Benchmarking
+### ✅ M2: Benchmarking
 
-- [ ] Load testing infrastructure
-- [ ] Events/second throughput benchmarks
-- [ ] WebSocket connection limits
-- [ ] SDK bundle size verification (<1kb)
+- [x] Load testing infrastructure (k6 + Node.js hybrid)
+- [x] Events/second throughput benchmarks (`just bench-load`)
+- [x] WebSocket connection limits (`just bench-connections`)
+- [x] SDK bundle size verification — worker: 838B gzipped (<1KB goal met)
 
 ### 📋 M3: Dashboard MVP
 
