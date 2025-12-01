@@ -15,12 +15,12 @@ Beacon's path to a stable alpha release.
 - [x] Documentation (SDK, API, protocol, identity)
 - [x] SDK unit tests (95% coverage)
 
-### 🚧 M1: Examples & Polish
+### ✅ M1: Examples & Polish
 
 - [x] React example app
 - [x] Flag management UI
-- [ ] Dashboard authentication
-- [ ] Basic analytics visualizations
+- [x] Dashboard authentication (Lucia + session cookies)
+- [x] Basic analytics visualizations (LayerChart)
 
 ### ✅ M2: Benchmarking
 
