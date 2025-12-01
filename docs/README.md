@@ -1,12 +1,14 @@
 # Beacon
 
+[![CI](https://github.com/devdumpling/beacon/actions/workflows/ci.yml/badge.svg)](https://github.com/devdumpling/beacon/actions/workflows/ci.yml)
+
 Lightweight, privacy-first analytics platform.
 
-> **Alpha Prototype** — Beacon is under active development. APIs may change.
+> **Pre-Alpha Prototype** — Beacon is under active development. APIs may change.
 
 ## Goals
 
-1. **Lightweight and simple** — Minimal API surface, robust code, performance over feature bloat
+1. **Lightweight and simple** — Minimal API surface, robust/well-tested code, performance over feature bloat
 2. **Tiny client SDK** — <1KB worker gzipped (838B), runs in a Web Worker off the main thread
 3. **Self-host friendly** — Easy to fork and customize for your organization
 4. **Privacy compliant** — Built for FedRAMP and HIPAA, designed for healthcare
@@ -17,7 +19,8 @@ Lightweight, privacy-first analytics platform.
 | Component  | Tech                              | Port |
 | ---------- | --------------------------------- | ---- |
 | API        | Gleam on BEAM (Mist HTTP/WS)      | 4000 |
-| Dashboard  | SvelteKit + Tailwind              | 5173 |
+| Dashboard  | SvelteKit + Tailwind + Zero       | 5173 |
+| Zero Cache | Rocicorp Zero (sync engine)       | 4848 |
 | Database   | PostgreSQL (Docker)               | 5432 |
 | Client SDK | TypeScript, Web Worker, WebSocket | -    |
 
@@ -25,8 +28,9 @@ Lightweight, privacy-first analytics platform.
 
 ### Prerequisites
 
+- [Node.js](https://nodejs.org/) 24+
 - [pnpm](https://pnpm.io/) 10.x
-- [Gleam](https://gleam.run/) 1.x
+- [Gleam](https://gleam.run/) 1.13+
 - [Docker](https://www.docker.com/)
 - [Just](https://github.com/casey/just)
 - [dbmate](https://github.com/amacneil/dbmate)
@@ -45,8 +49,10 @@ just dev      # Start API (4000) + Dashboard (5173)
 
 ```
 Client App → @beacon/sdk (Web Worker) → WebSocket → Gleam API (BEAM) → PostgreSQL
-                                                          ↓
-                                              SvelteKit Dashboard
+                                                                            ↓
+                                                                      WAL (logical)
+                                                                            ↓
+                                              SvelteKit Dashboard ←── Zero Cache
 ```
 
 ## SDK Usage
@@ -74,9 +80,11 @@ beacon/
 ├── apps/
 │   ├── api/              # Gleam backend
 │   ├── dashboard/        # SvelteKit dashboard
+│   ├── example-react/    # React example app
 │   └── example-vanilla/  # Vanilla JS example
 ├── packages/
-│   └── sdk/              # Client SDK (@beacon/sdk)
+│   ├── sdk/              # Client SDK (@beacon/sdk)
+│   └── example-shared/   # Shared example styles
 ├── docs/                 # Documentation
 ├── infra/
 │   ├── docker-compose.yml

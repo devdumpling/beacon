@@ -45,7 +45,7 @@ dev-zero:
 # ─────────────────────────────────────────────────────────────
 
 # Build all packages
-build: build-types build-sdk build-api build-dashboard
+build: build-sdk build-api build-dashboard
 
 # Build Gleam API
 build-api:
@@ -58,10 +58,6 @@ build-dashboard:
 # Build SDK package
 build-sdk:
     pnpm --filter @beacon/sdk build
-
-# Build shared types
-build-types:
-    pnpm --filter @beacon/types build
 
 # ─────────────────────────────────────────────────────────────
 # Test
