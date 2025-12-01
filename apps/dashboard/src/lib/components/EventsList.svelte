@@ -6,7 +6,8 @@
   let { projectId }: { projectId: string } = $props();
 
   // Fetch a larger set and paginate client-side
-  const eventsQuery = useQuery<Event>(recentEvents(projectId, 500));
+  // Use getter function so query re-runs if projectId changes
+  const eventsQuery = useQuery<Event>(() => recentEvents(projectId, 500));
 
   // Client-side pagination
   let displayLimit = $state(100);

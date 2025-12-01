@@ -78,10 +78,18 @@ export interface QueryResult<T> {
 }
 
 /**
+ * Query input type - either a query object or a getter function for reactive params.
+ */
+type QueryInput<TTable extends keyof Schema["tables"] & string, TReturn> =
+  | Query<Schema, TTable, TReturn>
+  | (() => Query<Schema, TTable, TReturn>);
+
+/**
  * Create a reactive query that automatically updates when data changes.
  * Handles subscription lifecycle and cleanup automatically.
  *
- * Works with synced queries - just pass the result of calling your query function.
+ * Works with synced queries. Pass either a query directly or a getter function
+ * for reactive parameters:
  *
  * @example
  * ```svelte
@@ -89,7 +97,11 @@ export interface QueryResult<T> {
  *   import { useQuery } from '$lib/zero/client.svelte';
  *   import { recentEvents } from '$lib/zero/queries';
  *
- *   const events = useQuery(recentEvents(projectId, 100));
+ *   // Static query (no reactive params):
+ *   const events = useQuery(recentEvents('project-123', 100));
+ *
+ *   // Reactive query (re-runs when projectId or limit changes):
+ *   const events = useQuery(() => recentEvents(projectId, limit));
  * </script>
  *
  * {#each events.data as event}
@@ -100,13 +112,18 @@ export interface QueryResult<T> {
 export function useQuery<
   TTable extends keyof Schema["tables"] & string,
   TReturn,
->(query: Query<Schema, TTable, TReturn>): QueryResult<TReturn> {
+>(queryInput: QueryInput<TTable, TReturn>): QueryResult<TReturn> {
   const zero = getZero();
 
   let data = $state<TReturn[]>([]);
   let loading = $state(true);
 
   $effect(() => {
+    // Resolve query - call getter if function, otherwise use directly
+    // This makes reactive dependencies work when using getter form
+    const query =
+      typeof queryInput === "function" ? queryInput() : queryInput;
+
     // Materialize the query (returns a View)
     const view = zero.materialize(query);
 
@@ -164,7 +181,11 @@ export interface QueryOneResult<T> {
  *   import { useQueryOne } from '$lib/zero/client.svelte';
  *   import { projectById } from '$lib/zero/queries';
  *
- *   const project = useQueryOne(projectById(projectId));
+ *   // Static query:
+ *   const project = useQueryOne(projectById('project-123'));
+ *
+ *   // Reactive query (re-runs when projectId changes):
+ *   const project = useQueryOne(() => projectById(projectId));
  * </script>
  *
  * {#if project.data}
@@ -175,13 +196,17 @@ export interface QueryOneResult<T> {
 export function useQueryOne<
   TTable extends keyof Schema["tables"] & string,
   TReturn,
->(query: Query<Schema, TTable, TReturn>): QueryOneResult<TReturn> {
+>(queryInput: QueryInput<TTable, TReturn>): QueryOneResult<TReturn> {
   const zero = getZero();
 
   let data = $state<TReturn | undefined>(undefined);
   let loading = $state(true);
 
   $effect(() => {
+    // Resolve query - call getter if function, otherwise use directly
+    const query =
+      typeof queryInput === "function" ? queryInput() : queryInput;
+
     const view = zero.materialize(query);
 
     const unsubscribe = view.addListener((result) => {

@@ -5,8 +5,9 @@
 
   let { sessionId }: { sessionId: string } = $props();
 
-  const sessionQuery = useQueryOne<Session>(sessionById(sessionId));
-  const eventsQuery = useQuery<Event>(eventsForSession(sessionId));
+  // Use getter functions so queries re-run if sessionId changes
+  const sessionQuery = useQueryOne<Session>(() => sessionById(sessionId));
+  const eventsQuery = useQuery<Event>(() => eventsForSession(sessionId));
 
   const loading = $derived(sessionQuery.loading || eventsQuery.loading);
   const session = $derived(sessionQuery.data);

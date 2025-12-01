@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getZero } from "$lib/zero/client.svelte";
+  import { useQuery } from "$lib/zero/client.svelte";
   import {
     eventsInWindow,
     sessionsInWindow,
@@ -17,73 +17,19 @@
   // Date range state
   let days = $state(7);
 
-  // Get Zero client
-  const zero = getZero();
-
-  // Reactive query data using $state and $effect for proper reactivity
-  let eventsData = $state<Event[]>([]);
-  let sessionsData = $state<Session[]>([]);
-  let flagsData = $state<Flag[]>([]);
-  let recentEventsData = $state<Event[]>([]);
-  let loading = $state(true);
-
-  // Effect to handle all queries reactively when projectId or days change
-  $effect(() => {
-    // Capture reactive values
-    const pid = projectId;
-    const d = days;
-
-    // Create queries
-    const eventsQ = eventsInWindow(pid, d);
-    const sessionsQ = sessionsInWindow(pid, d);
-    const flagsQ = enabledFlags(pid);
-    const recentQ = recentEvents(pid, 10);
-
-    // Materialize and subscribe
-    const eventsView = zero.materialize(eventsQ);
-    const sessionsView = zero.materialize(sessionsQ);
-    const flagsView = zero.materialize(flagsQ);
-    const recentView = zero.materialize(recentQ);
-
-    const unsubEvents = eventsView.addListener((data) => {
-      eventsData = Array.isArray(data) ? [...data] as Event[] : [];
-    });
-    const unsubSessions = sessionsView.addListener((data) => {
-      sessionsData = Array.isArray(data) ? [...data] as Session[] : [];
-    });
-    const unsubFlags = flagsView.addListener((data) => {
-      flagsData = Array.isArray(data) ? [...data] as Flag[] : [];
-    });
-    const unsubRecent = recentView.addListener((data) => {
-      recentEventsData = Array.isArray(data) ? [...data] as Event[] : [];
-    });
-
-    // Run initial queries
-    Promise.all([
-      zero.run(eventsQ),
-      zero.run(sessionsQ),
-      zero.run(flagsQ),
-      zero.run(recentQ),
-    ]).then(([events, sessions, flags, recent]) => {
-      eventsData = Array.isArray(events) ? [...events] as Event[] : [];
-      sessionsData = Array.isArray(sessions) ? [...sessions] as Session[] : [];
-      flagsData = Array.isArray(flags) ? [...flags] as Flag[] : [];
-      recentEventsData = Array.isArray(recent) ? [...recent] as Event[] : [];
-      loading = false;
-    });
-
-    return () => {
-      unsubEvents();
-      unsubSessions();
-      unsubFlags();
-      unsubRecent();
-    };
-  });
+  // Reactive synced queries - use getter functions so queries re-run when params change
+  const eventsQuery = useQuery<Event>(() => eventsInWindow(projectId, days));
+  const sessionsQuery = useQuery<Session>(() => sessionsInWindow(projectId, days));
+  const flagsQuery = useQuery<Flag>(() => enabledFlags(projectId));
+  const recentQuery = useQuery<Event>(() => recentEvents(projectId, 10));
 
   // Computed values
-  const eventCount = $derived(eventsData.length);
-  const sessionCount = $derived(sessionsData.length);
-  const flagCount = $derived(flagsData.length);
+  const loading = $derived(
+    eventsQuery.loading || sessionsQuery.loading || flagsQuery.loading || recentQuery.loading
+  );
+  const eventCount = $derived(eventsQuery.data.length);
+  const sessionCount = $derived(sessionsQuery.data.length);
+  const flagCount = $derived(flagsQuery.data.length);
 </script>
 
 <!-- Date Range Picker -->
@@ -154,7 +100,7 @@
     {#if loading}
       <div class="h-48 flex items-center justify-center text-rp-muted">Loading...</div>
     {:else}
-      <EventsOverTimeChart events={eventsData} {days} />
+      <EventsOverTimeChart events={eventsQuery.data} {days} />
     {/if}
   </div>
 
@@ -163,7 +109,7 @@
     {#if loading}
       <div class="h-48 flex items-center justify-center text-rp-muted">Loading...</div>
     {:else}
-      <SessionsTrendChart sessions={sessionsData} {days} />
+      <SessionsTrendChart sessions={sessionsQuery.data} {days} />
     {/if}
   </div>
 </div>
@@ -174,7 +120,7 @@
   {#if loading}
     <div class="h-48 flex items-center justify-center text-rp-muted">Loading...</div>
   {:else}
-    <TopEventsChart events={eventsData} limit={5} />
+    <TopEventsChart events={eventsQuery.data} limit={5} />
   {/if}
 </div>
 
@@ -186,7 +132,7 @@
   <div class="p-4">
     {#if loading}
       <p class="text-rp-muted">Loading events...</p>
-    {:else if recentEventsData.length === 0}
+    {:else if recentQuery.data.length === 0}
       <p class="text-rp-muted">No events yet. Integrate the SDK to start tracking.</p>
     {:else}
       <table class="w-full">
@@ -198,7 +144,7 @@
           </tr>
         </thead>
         <tbody>
-          {#each recentEventsData as event}
+          {#each recentQuery.data as event}
             <tr class="border-t border-rp-overlay">
               <td class="py-2 font-mono text-sm text-rp-text">{event.event_name}</td>
               <td class="py-2 text-sm text-rp-subtle">
