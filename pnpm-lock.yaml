@@ -35,13 +35,13 @@ importers:
     devDependencies:
       '@sveltejs/adapter-node':
         specifier: ^5.2.0
-        version: 5.4.0(@sveltejs/kit@2.49.0(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@4.0.4(svelte@5.45.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7)(tsx@4.21.0)))(svelte@5.45.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7)(tsx@4.21.0)))
+        version: 5.4.0(@sveltejs/kit@2.49.0(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.45.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7)(tsx@4.21.0)))(svelte@5.45.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7)(tsx@4.21.0)))
       '@sveltejs/kit':
-        specifier: ^2.8.0
-        version: 2.49.0(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@4.0.4(svelte@5.45.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7)(tsx@4.21.0)))(svelte@5.45.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7)(tsx@4.21.0))
+        specifier: ^2.49.0
+        version: 2.49.0(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.45.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7)(tsx@4.21.0)))(svelte@5.45.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7)(tsx@4.21.0))
       '@sveltejs/vite-plugin-svelte':
-        specifier: ^4.0.0
-        version: 4.0.4(svelte@5.45.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7)(tsx@4.21.0))
+        specifier: ^6.2.1
+        version: 6.2.1(svelte@5.45.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7)(tsx@4.21.0))
       '@types/node':
         specifier: ^22.0.0
         version: 22.19.1
@@ -58,7 +58,7 @@ importers:
         specifier: ^8.4.49
         version: 8.5.6
       svelte:
-        specifier: ^5.2.0
+        specifier: ^5.45.2
         version: 5.45.2
       svelte-check:
         specifier: ^4.1.0
@@ -1606,8 +1606,8 @@ packages:
   '@standard-schema/spec@1.0.0':
     resolution: {integrity: sha512-m2bOd0f2RT9k8QJx1JN85cZYyH1RqFBdlwtkSlf4tBDYLCiiZnv1fIIwacK6cqwXavOydf0NPToMQgpKq+dVlA==}
 
-  '@sveltejs/acorn-typescript@1.0.7':
-    resolution: {integrity: sha512-znp1A/Y1Jj4l/Zy7PX5DZKBE0ZNY+5QBngiE21NJkfSTyzzC5iKNWOtwFXKtIrn7MXEFBck4jD95iBNkGjK92Q==}
+  '@sveltejs/acorn-typescript@1.0.8':
+    resolution: {integrity: sha512-esgN+54+q0NjB0Y/4BomT9samII7jGwNy/2a3wNZbT2A2RpmXsXwUt24LvLhx6jUq2gVk4cWEvcRO6MFQbOfNA==}
     peerDependencies:
       acorn: ^8.9.0
 
@@ -1629,20 +1629,20 @@ packages:
       '@opentelemetry/api':
         optional: true
 
-  '@sveltejs/vite-plugin-svelte-inspector@3.0.1':
-    resolution: {integrity: sha512-2CKypmj1sM4GE7HjllT7UKmo4Q6L5xFRd7VMGEWhYnZ+wc6AUVU01IBd7yUi6WnFndEwWoMNOd6e8UjoN0nbvQ==}
-    engines: {node: ^18.0.0 || ^20.0.0 || >=22}
+  '@sveltejs/vite-plugin-svelte-inspector@5.0.1':
+    resolution: {integrity: sha512-ubWshlMk4bc8mkwWbg6vNvCeT7lGQojE3ijDh3QTR6Zr/R+GXxsGbyH4PExEPpiFmqPhYiVSVmHBjUcVc1JIrA==}
+    engines: {node: ^20.19 || ^22.12 || >=24}
     peerDependencies:
-      '@sveltejs/vite-plugin-svelte': ^4.0.0-next.0||^4.0.0
-      svelte: ^5.0.0-next.96 || ^5.0.0
-      vite: ^5.0.0
+      '@sveltejs/vite-plugin-svelte': ^6.0.0-next.0
+      svelte: ^5.0.0
+      vite: ^6.3.0 || ^7.0.0
 
-  '@sveltejs/vite-plugin-svelte@4.0.4':
-    resolution: {integrity: sha512-0ba1RQ/PHen5FGpdSrW7Y3fAMQjrXantECALeOiOdBdzR5+5vPP6HVZRLmZaQL+W8m++o+haIAKq5qT+MiZ7VA==}
-    engines: {node: ^18.0.0 || ^20.0.0 || >=22}
+  '@sveltejs/vite-plugin-svelte@6.2.1':
+    resolution: {integrity: sha512-YZs/OSKOQAQCnJvM/P+F1URotNnYNeU3P2s4oIpzm1uFaqUEqRxUB0g5ejMjEb5Gjb9/PiBI5Ktrq4rUUF8UVQ==}
+    engines: {node: ^20.19 || ^22.12 || >=24}
     peerDependencies:
-      svelte: ^5.0.0-next.96 || ^5.0.0
-      vite: ^5.0.0
+      svelte: ^5.0.0
+      vite: ^6.3.0 || ^7.0.0
 
   '@types/aws-lambda@8.10.152':
     resolution: {integrity: sha512-soT/c2gYBnT5ygwiHPmd9a1bftj462NWVk2tKCc1PYHSIacB2UwbTS2zYG4jzag1mRDuzg/OjtxQjQ2NKRB6Rw==}
@@ -5223,23 +5223,23 @@ snapshots:
 
   '@standard-schema/spec@1.0.0': {}
 
-  '@sveltejs/acorn-typescript@1.0.7(acorn@8.15.0)':
+  '@sveltejs/acorn-typescript@1.0.8(acorn@8.15.0)':
     dependencies:
       acorn: 8.15.0
 
-  '@sveltejs/adapter-node@5.4.0(@sveltejs/kit@2.49.0(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@4.0.4(svelte@5.45.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7)(tsx@4.21.0)))(svelte@5.45.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7)(tsx@4.21.0)))':
+  '@sveltejs/adapter-node@5.4.0(@sveltejs/kit@2.49.0(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.45.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7)(tsx@4.21.0)))(svelte@5.45.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7)(tsx@4.21.0)))':
     dependencies:
       '@rollup/plugin-commonjs': 28.0.9(rollup@4.53.3)
       '@rollup/plugin-json': 6.1.0(rollup@4.53.3)
       '@rollup/plugin-node-resolve': 16.0.3(rollup@4.53.3)
-      '@sveltejs/kit': 2.49.0(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@4.0.4(svelte@5.45.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7)(tsx@4.21.0)))(svelte@5.45.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7)(tsx@4.21.0))
+      '@sveltejs/kit': 2.49.0(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.45.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7)(tsx@4.21.0)))(svelte@5.45.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7)(tsx@4.21.0))
       rollup: 4.53.3
 
-  '@sveltejs/kit@2.49.0(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@4.0.4(svelte@5.45.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7)(tsx@4.21.0)))(svelte@5.45.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7)(tsx@4.21.0))':
+  '@sveltejs/kit@2.49.0(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.45.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7)(tsx@4.21.0)))(svelte@5.45.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7)(tsx@4.21.0))':
     dependencies:
       '@standard-schema/spec': 1.0.0
-      '@sveltejs/acorn-typescript': 1.0.7(acorn@8.15.0)
-      '@sveltejs/vite-plugin-svelte': 4.0.4(svelte@5.45.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7)(tsx@4.21.0))
+      '@sveltejs/acorn-typescript': 1.0.8(acorn@8.15.0)
+      '@sveltejs/vite-plugin-svelte': 6.2.1(svelte@5.45.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7)(tsx@4.21.0))
       '@types/cookie': 0.6.0
       acorn: 8.15.0
       cookie: 0.6.0
@@ -5256,21 +5256,20 @@ snapshots:
     optionalDependencies:
       '@opentelemetry/api': 1.9.0
 
-  '@sveltejs/vite-plugin-svelte-inspector@3.0.1(@sveltejs/vite-plugin-svelte@4.0.4(svelte@5.45.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7)(tsx@4.21.0)))(svelte@5.45.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7)(tsx@4.21.0))':
+  '@sveltejs/vite-plugin-svelte-inspector@5.0.1(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.45.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7)(tsx@4.21.0)))(svelte@5.45.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7)(tsx@4.21.0))':
     dependencies:
-      '@sveltejs/vite-plugin-svelte': 4.0.4(svelte@5.45.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7)(tsx@4.21.0))
+      '@sveltejs/vite-plugin-svelte': 6.2.1(svelte@5.45.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7)(tsx@4.21.0))
       debug: 4.4.3
       svelte: 5.45.2
       vite: 6.4.1(@types/node@22.19.1)(jiti@1.21.7)(tsx@4.21.0)
     transitivePeerDependencies:
       - supports-color
 
-  '@sveltejs/vite-plugin-svelte@4.0.4(svelte@5.45.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7)(tsx@4.21.0))':
+  '@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.45.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7)(tsx@4.21.0))':
     dependencies:
-      '@sveltejs/vite-plugin-svelte-inspector': 3.0.1(@sveltejs/vite-plugin-svelte@4.0.4(svelte@5.45.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7)(tsx@4.21.0)))(svelte@5.45.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7)(tsx@4.21.0))
+      '@sveltejs/vite-plugin-svelte-inspector': 5.0.1(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.45.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7)(tsx@4.21.0)))(svelte@5.45.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7)(tsx@4.21.0))
       debug: 4.4.3
       deepmerge: 4.3.1
-      kleur: 4.1.5
       magic-string: 0.30.21
       svelte: 5.45.2
       vite: 6.4.1(@types/node@22.19.1)(jiti@1.21.7)(tsx@4.21.0)
@@ -7048,7 +7047,7 @@ snapshots:
     dependencies:
       '@jridgewell/remapping': 2.3.5
       '@jridgewell/sourcemap-codec': 1.5.5
-      '@sveltejs/acorn-typescript': 1.0.7(acorn@8.15.0)
+      '@sveltejs/acorn-typescript': 1.0.8(acorn@8.15.0)
       '@types/estree': 1.0.8
       acorn: 8.15.0
       aria-query: 5.3.2

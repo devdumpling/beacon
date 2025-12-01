@@ -24,19 +24,15 @@ export type AuthContext = {
 /**
  * Get the first project (for single-tenant development)
  */
-export const firstProject = syncedQuery(
-  "firstProject",
-  z.tuple([]),
-  (_ctx: AuthContext) => builder.projects.limit(1)
+export const firstProject = syncedQuery("firstProject", z.tuple([]), () =>
+  builder.projects.limit(1)
 );
 
 /**
  * Get all projects
  */
-export const allProjects = syncedQuery(
-  "allProjects",
-  z.tuple([]),
-  (_ctx: AuthContext) => builder.projects
+export const allProjects = syncedQuery("allProjects", z.tuple([]), () =>
+  builder.projects
 );
 
 /**
@@ -45,7 +41,7 @@ export const allProjects = syncedQuery(
 export const projectById = syncedQuery(
   "projectById",
   z.tuple([z.string()]),
-  (_ctx: AuthContext, projectId) => builder.projects.where("id", projectId).one()
+  (projectId) => builder.projects.where("id", projectId).one()
 );
 
 // ============================================
@@ -58,7 +54,7 @@ export const projectById = syncedQuery(
 export const recentEvents = syncedQuery(
   "recentEvents",
   z.tuple([z.string(), z.number().optional()]),
-  (_ctx: AuthContext, projectId, limit = 100) =>
+  (projectId, limit = 100) =>
     builder.events
       .where("project_id", projectId)
       .orderBy("timestamp", "desc")
@@ -71,11 +67,11 @@ export const recentEvents = syncedQuery(
 export const eventsInWindow = syncedQuery(
   "eventsInWindow",
   z.tuple([z.string(), z.number().optional()]),
-  (_ctx: AuthContext, projectId, days = 7) => {
-    const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+  (projectId, days = 7) => {
+    const sinceMs = Date.now() - days * 24 * 60 * 60 * 1000;
     return builder.events
       .where("project_id", projectId)
-      .where("timestamp", ">=", since);
+      .where("timestamp", ">=", sinceMs);
   }
 );
 
@@ -89,7 +85,7 @@ export const eventsInWindow = syncedQuery(
 export const recentSessions = syncedQuery(
   "recentSessions",
   z.tuple([z.string(), z.number().optional()]),
-  (_ctx: AuthContext, projectId, limit = 50) =>
+  (projectId, limit = 50) =>
     builder.sessions
       .where("project_id", projectId)
       .orderBy("started_at", "desc")
@@ -102,11 +98,11 @@ export const recentSessions = syncedQuery(
 export const sessionsInWindow = syncedQuery(
   "sessionsInWindow",
   z.tuple([z.string(), z.number().optional()]),
-  (_ctx: AuthContext, projectId, days = 7) => {
-    const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+  (projectId, days = 7) => {
+    const sinceMs = Date.now() - days * 24 * 60 * 60 * 1000;
     return builder.sessions
       .where("project_id", projectId)
-      .where("started_at", ">=", since);
+      .where("started_at", ">=", sinceMs);
   }
 );
 
@@ -116,7 +112,7 @@ export const sessionsInWindow = syncedQuery(
 export const sessionById = syncedQuery(
   "sessionById",
   z.tuple([z.string()]),
-  (_ctx: AuthContext, sessionId) => builder.sessions.where("id", sessionId).one()
+  (sessionId) => builder.sessions.where("id", sessionId).one()
 );
 
 // ============================================
@@ -129,7 +125,7 @@ export const sessionById = syncedQuery(
 export const flagsForProject = syncedQuery(
   "flagsForProject",
   z.tuple([z.string()]),
-  (_ctx: AuthContext, projectId) =>
+  (projectId) =>
     builder.flags.where("project_id", projectId).orderBy("key", "asc")
 );
 
@@ -139,8 +135,8 @@ export const flagsForProject = syncedQuery(
 export const enabledFlags = syncedQuery(
   "enabledFlags",
   z.tuple([z.string()]),
-  (_ctx: AuthContext, projectId) =>
-    builder.flags.where("project_id", projectId).where("enabled", true)
+  (projectId) =>
+    builder.flags.where("project_id", projectId).where("enabled", "=", true)
 );
 
 // ============================================
@@ -153,7 +149,7 @@ export const enabledFlags = syncedQuery(
 export const usersForProject = syncedQuery(
   "usersForProject",
   z.tuple([z.string(), z.number().optional()]),
-  (_ctx: AuthContext, projectId, limit = 50) =>
+  (projectId, limit = 50) =>
     builder.users
       .where("project_id", projectId)
       .orderBy("last_seen_at", "desc")
@@ -166,10 +162,8 @@ export const usersForProject = syncedQuery(
 export const identifiedUsers = syncedQuery(
   "identifiedUsers",
   z.tuple([z.string()]),
-  (_ctx: AuthContext, projectId) =>
-    builder.users
-      .where("project_id", projectId)
-      .where("user_id", "!=", null)
+  (projectId) =>
+    builder.users.where("project_id", projectId).where("user_id", "!=", null)
 );
 
 // ============================================

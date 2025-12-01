@@ -1,15 +1,12 @@
 <script lang="ts">
   import "../app.css";
-  import { browser } from "$app/environment";
   import { PUBLIC_ZERO_SERVER } from "$env/static/public";
   import { createZero } from "$lib/zero/client.svelte";
 
   let { children } = $props();
 
-  // Initialize Zero client (client-side only)
-  if (browser) {
-    createZero("dashboard-admin", PUBLIC_ZERO_SERVER || "http://localhost:4848");
-  }
+  // Initialize Zero client (SSR disabled in +layout.ts)
+  createZero("dashboard-admin", PUBLIC_ZERO_SERVER || "http://localhost:4848");
 </script>
 
 <div class="min-h-screen flex">

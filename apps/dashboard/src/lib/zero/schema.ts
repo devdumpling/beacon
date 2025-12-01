@@ -31,13 +31,13 @@ const projects = table("projects")
     id: string(),
     name: string(),
     api_key: string(),
-    created_at: string(), // TIMESTAMPTZ stored as ISO string
+    created_at: number(), // TIMESTAMPTZ -> number (ms since epoch)
   })
   .primaryKey("id");
 
 /**
  * Events (analytics events)
- * Note: This is a partitioned table in PostgreSQL - using just 'id' as PK for Zero
+ * Note: This is a partitioned table in PostgreSQL with composite PK (id, received_at)
  */
 const events = table("events")
   .columns({
@@ -48,10 +48,10 @@ const events = table("events")
     user_id: string().optional(),
     event_name: string(),
     properties: json<Record<string, unknown>>().optional(),
-    timestamp: string(), // TIMESTAMPTZ
-    received_at: string(), // TIMESTAMPTZ - part of composite PK in Postgres
+    timestamp: number(), // TIMESTAMPTZ -> number (ms since epoch)
+    received_at: number(), // TIMESTAMPTZ -> number (part of composite PK)
   })
-  .primaryKey("id");
+  .primaryKey("id", "received_at");
 
 /**
  * Sessions
@@ -62,8 +62,8 @@ const sessions = table("sessions")
     project_id: string(),
     anon_id: string(),
     user_id: string().optional(),
-    started_at: string(), // TIMESTAMPTZ
-    last_event_at: string(), // TIMESTAMPTZ
+    started_at: number(), // TIMESTAMPTZ -> number (ms since epoch)
+    last_event_at: number(), // TIMESTAMPTZ -> number
     event_count: number().optional(),
     entry_url: string().optional(),
     last_url: string().optional(),
@@ -80,8 +80,8 @@ const flags = table("flags")
     key: string(),
     name: string(),
     enabled: boolean(),
-    created_at: string(), // TIMESTAMPTZ
-    updated_at: string(), // TIMESTAMPTZ
+    created_at: number(), // TIMESTAMPTZ -> number (ms since epoch)
+    updated_at: number(), // TIMESTAMPTZ -> number
   })
   .primaryKey("id");
 
@@ -95,8 +95,8 @@ const users = table("users")
     anon_id: string(),
     user_id: string().optional(),
     traits: json<Record<string, unknown>>().optional(),
-    first_seen_at: string(), // TIMESTAMPTZ
-    last_seen_at: string(), // TIMESTAMPTZ
+    first_seen_at: number(), // TIMESTAMPTZ -> number (ms since epoch)
+    last_seen_at: number(), // TIMESTAMPTZ -> number
   })
   .primaryKey("id");
 

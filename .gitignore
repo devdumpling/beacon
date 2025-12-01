@@ -9,6 +9,7 @@ node_modules/
 
 # SvelteKit
 .svelte-kit/
+apps/dashboard/build
 
 # Gleam build
 /apps/api/build/

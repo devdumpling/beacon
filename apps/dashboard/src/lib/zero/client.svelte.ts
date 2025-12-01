@@ -3,10 +3,12 @@
  *
  * Provides ergonomic reactive hooks for Zero synced queries in Svelte.
  * Handles subscription lifecycle and cleanup automatically.
+ *
+ * Uses Svelte context for proper component tree integration.
  */
 
 import { schema, type Schema } from "./schema";
-import { Zero } from "@rocicorp/zero";
+import { Zero, type Query } from "@rocicorp/zero";
 import { getContext, setContext, untrack } from "svelte";
 
 const ZERO_KEY = Symbol("zero");
@@ -15,9 +17,9 @@ export type ZeroClient = Zero<Schema>;
 
 /**
  * Initialize Zero client and set it in Svelte context.
- * Call this once in your root layout or app component.
+ * Call this once in your root layout (client-side only).
  *
- * @param userID - Unique identifier for the current user (use 'dashboard' for admin)
+ * @param userID - Unique identifier for the current user (use 'dashboard-admin' for admin)
  * @param server - Zero cache server URL (default: http://localhost:4848)
  * @returns Zero client instance
  */
@@ -43,7 +45,7 @@ export function getZero(): ZeroClient {
   const zero = getContext<ZeroClient>(ZERO_KEY);
   if (!zero) {
     throw new Error(
-      "Zero not initialized. Call createZero() in a parent component (e.g., +layout.svelte)"
+      "Zero not initialized. Call createZero() in +layout.svelte first."
     );
   }
   return zero;
@@ -79,9 +81,10 @@ export interface QueryResult<T> {
  * {/each}
  * ```
  */
-export function useQuery<TReturn>(
-  query: Parameters<ZeroClient["materialize"]>[0]
-): QueryResult<TReturn> {
+export function useQuery<
+  TTable extends keyof Schema["tables"] & string,
+  TReturn
+>(query: Query<Schema, TTable, TReturn>): QueryResult<TReturn> {
   const zero = getZero();
 
   let data = $state<TReturn[]>([]);
@@ -153,9 +156,10 @@ export interface QueryOneResult<T> {
  * {/if}
  * ```
  */
-export function useQueryOne<TReturn>(
-  query: Parameters<ZeroClient["materialize"]>[0]
-): QueryOneResult<TReturn> {
+export function useQueryOne<
+  TTable extends keyof Schema["tables"] & string,
+  TReturn
+>(query: Query<Schema, TTable, TReturn>): QueryOneResult<TReturn> {
   const zero = getZero();
 
   let data = $state<TReturn | undefined>(undefined);
