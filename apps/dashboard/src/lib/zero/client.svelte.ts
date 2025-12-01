@@ -23,6 +23,7 @@ let _zeroInstance: ZeroClient | null = null;
 /**
  * Initialize Zero client and set it in Svelte context.
  * Call this once in your root layout (client-side only).
+ * Idempotent - returns existing instance if already created.
  *
  * @param userID - Unique identifier for the current user (use 'dashboard-admin' for admin)
  * @param server - Zero cache server URL (default: http://localhost:4848)
@@ -32,6 +33,11 @@ export function createZero(
   userID: string = "dashboard-admin",
   server: string = "http://localhost:4848",
 ): ZeroClient {
+  // Return existing instance if already initialized (idempotent)
+  if (_zeroInstance) {
+    return _zeroInstance;
+  }
+
   const zero = new Zero<Schema, Mutators>({
     server,
     schema,
