@@ -11,11 +11,11 @@
     "db:reset": "just db-reset"
   },
   "devDependencies": {
-    "@types/node": "^22.0.0",
+    "@types/node": "^24.10.1",
     "postgres": "^3.4.7",
-    "prettier": "^3.4.0",
+    "prettier": "^3.7.3",
     "tsx": "^4.21.0",
-    "typescript": "^5.7.0"
+    "typescript": "^5.9.3"
   },
   "engines": {
     "node": ">=24.0.0"
