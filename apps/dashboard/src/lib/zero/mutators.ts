@@ -25,7 +25,7 @@ export function createMutators() {
         await tx.mutate.flags.update({
           id,
           enabled,
-          updated_at: new Date().toISOString(),
+          updated_at: Date.now(),
         });
       },
 
@@ -48,7 +48,7 @@ export function createMutators() {
           enabled?: boolean;
         }
       ) => {
-        const now = new Date().toISOString();
+        const now = Date.now();
         await tx.mutate.flags.insert({
           id,
           project_id,

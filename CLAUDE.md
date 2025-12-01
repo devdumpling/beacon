@@ -106,6 +106,10 @@ DATABASE_URL=postgres://beacon:beacon@localhost:5432/beacon?sslmode=disable
 PORT=4000
 ```
 
+## Git Commits
+
+Use conventional commits (`feat:`, `fix:`, `docs:`, etc.). Keep messages concise with useful descriptions. No co-author lines or generated-by footers.
+
 ## Documentation
 
 For detailed documentation, see the `docs/` folder:
