@@ -130,3 +130,4 @@ For detailed documentation, see the `docs/` folder:
 - [API Reference](docs/api.md) - Server endpoints
 - [WebSocket Protocol](docs/protocol.md) - Wire protocol
 - [Identity Tracking](docs/identity.md) - User identification system
+- [CI/CD](docs/ci.md) - GitHub Actions workflows

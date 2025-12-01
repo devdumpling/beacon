@@ -124,6 +124,7 @@ just lint             # Lint and format
 | [WebSocket Protocol](./protocol.md) | Wire protocol specification       |
 | [Identity Tracking](./identity.md)  | User identification system        |
 | [Benchmarking](./bench.md)          | Performance benchmarks            |
+| [CI/CD](./ci.md)                    | GitHub Actions workflows          |
 
 ## Environment
 
