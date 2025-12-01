@@ -2,26 +2,12 @@
   import { useQuery } from "$lib/zero/client.svelte";
   import { recentSessions } from "$lib/zero/queries";
   import type { Session } from "$lib/zero/schema";
+  import { formatTimestamp, formatRelativeTime } from "$lib/utils/formatters";
 
   let { projectId }: { projectId: string } = $props();
 
   // Use getter function so query re-runs if projectId changes
   const sessionsQuery = useQuery<Session>(() => recentSessions(projectId, 100));
-
-  function formatTimestamp(ts: number): string {
-    return new Date(ts).toLocaleString();
-  }
-
-  function formatRelativeTime(ts: number): string {
-    const diff = Date.now() - ts;
-    const minutes = Math.floor(diff / 60000);
-    if (minutes < 1) return "Just now";
-    if (minutes < 60) return `${minutes}m ago`;
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours}h ago`;
-    const days = Math.floor(hours / 24);
-    return `${days}d ago`;
-  }
 </script>
 
 <div class="bg-rp-surface rounded-lg border border-rp-overlay">

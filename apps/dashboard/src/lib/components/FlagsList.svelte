@@ -2,6 +2,7 @@
   import { useQuery, getZero } from "$lib/zero/client.svelte";
   import { flagsForProject } from "$lib/zero/queries";
   import type { Flag } from "$lib/zero/schema";
+  import { formatTimestamp } from "$lib/utils/formatters";
 
   let { projectId }: { projectId: string } = $props();
 
@@ -39,10 +40,6 @@
   async function deleteFlag(id: string) {
     if (!confirm("Delete this flag?")) return;
     await zero.mutate.flags.delete({ id });
-  }
-
-  function formatTimestamp(ts: number): string {
-    return new Date(ts).toLocaleString();
   }
 </script>
 

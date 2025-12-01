@@ -2,6 +2,7 @@
   import { useQuery } from "$lib/zero/client.svelte";
   import { recentEvents } from "$lib/zero/queries";
   import type { Event } from "$lib/zero/schema";
+  import { formatTimestamp, formatProperties } from "$lib/utils/formatters";
 
   let { projectId }: { projectId: string } = $props();
 
@@ -29,19 +30,6 @@
 
   function toggleExpanded(id: string) {
     expandedId = expandedId === id ? null : id;
-  }
-
-  function formatTimestamp(ts: number): string {
-    return new Date(ts).toLocaleString();
-  }
-
-  function formatProperties(props: Record<string, unknown> | null | undefined): string {
-    if (!props) return "{}";
-    try {
-      return JSON.stringify(props, null, 2);
-    } catch {
-      return String(props);
-    }
   }
 
   function loadMore() {

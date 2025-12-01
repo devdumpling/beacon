@@ -2,6 +2,7 @@
   import { useQuery, useQueryOne } from "$lib/zero/client.svelte";
   import { sessionById, eventsForSession } from "$lib/zero/queries";
   import type { Session, Event } from "$lib/zero/schema";
+  import { formatTimestamp, formatProperties } from "$lib/utils/formatters";
 
   let { sessionId }: { sessionId: string } = $props();
 
@@ -11,19 +12,6 @@
 
   const loading = $derived(sessionQuery.loading || eventsQuery.loading);
   const session = $derived(sessionQuery.data);
-
-  function formatTimestamp(ts: number): string {
-    return new Date(ts).toLocaleString();
-  }
-
-  function formatProperties(props: Record<string, unknown> | null | undefined): string {
-    if (!props) return "{}";
-    try {
-      return JSON.stringify(props, null, 2);
-    } catch {
-      return String(props);
-    }
-  }
 
   // Expanded event ID for properties view
   let expandedId = $state<string | null>(null);
