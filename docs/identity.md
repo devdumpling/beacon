@@ -4,11 +4,11 @@ Beacon uses a three-tier identity system to track users from first visit through
 
 ## Identity Types
 
-| ID           | Generator | Persistence             | Purpose                        |
-| ------------ | --------- | ----------------------- | ------------------------------ |
-| `anon_id`    | SDK       | Forever (localStorage)  | Permanent anonymous identifier |
-| `session_id` | SDK       | 30-min timeout          | Groups related activity        |
-| `user_id`    | Your app  | After identify()        | Links to your user system      |
+| ID           | Generator | Persistence            | Purpose                        |
+| ------------ | --------- | ---------------------- | ------------------------------ |
+| `anon_id`    | SDK       | Forever (localStorage) | Permanent anonymous identifier |
+| `session_id` | SDK       | 30-min timeout         | Groups related activity        |
+| `user_id`    | Your app  | After identify()       | Links to your user system      |
 
 ## How It Works
 
