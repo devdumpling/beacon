@@ -1,10 +1,11 @@
 <script lang="ts">
-  import { Chart, Svg, Axis, Area, Spline, Tooltip, Highlight } from "layerchart";
+  import { Chart, Svg, Axis, Area, Spline, Highlight } from "layerchart";
   import { scaleTime, scaleLinear } from "d3-scale";
   import { curveMonotoneX } from "d3-shape";
-  import type { Event } from "$lib/zero/schema";
 
-  let { events = [], days = 7 }: { events?: Event[]; days?: number } = $props();
+  // Accept any event-like object with timestamp field
+  type EventLike = { timestamp?: number };
+  let { events = [], days = 7 }: { events?: EventLike[]; days?: number } = $props();
 
   // Aggregate events by day
   const data = $derived.by(() => {
@@ -80,16 +81,6 @@
         <Spline class="stroke-2 stroke-rp-iris" curve={curveMonotoneX} />
         <Highlight points={{ class: "fill-rp-iris" }} lines />
       </Svg>
-      <Tooltip.Root let:data>
-        {#if data}
-          <Tooltip.Header>
-            {data.date.toLocaleDateString()}
-          </Tooltip.Header>
-          <Tooltip.List>
-            <Tooltip.Item label="Events" value={data.count} />
-          </Tooltip.List>
-        {/if}
-      </Tooltip.Root>
     </Chart>
   {:else}
     <div class="h-full flex items-center justify-center text-rp-muted">

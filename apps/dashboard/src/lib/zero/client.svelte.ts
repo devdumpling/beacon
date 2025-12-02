@@ -97,18 +97,11 @@ export interface QueryResult<T> {
 }
 
 /**
- * Query input type - either a query object or a getter function for reactive params.
- */
-type QueryInput<TTable extends keyof Schema["tables"] & string, TReturn> =
-  | Query<Schema, TTable, TReturn>
-  | (() => Query<Schema, TTable, TReturn>);
-
-/**
  * Create a reactive query that automatically updates when data changes.
  * Handles subscription lifecycle and cleanup automatically.
  *
  * Works with synced queries. Pass either a query directly or a getter function
- * for reactive parameters:
+ * for reactive parameters. Types are inferred automatically from the query.
  *
  * @example
  * ```svelte
@@ -116,10 +109,10 @@ type QueryInput<TTable extends keyof Schema["tables"] & string, TReturn> =
  *   import { useQuery } from '$lib/zero/client.svelte';
  *   import { recentEvents } from '$lib/zero/queries';
  *
- *   // Static query (no reactive params):
+ *   // Static query - types inferred automatically
  *   const events = useQuery(recentEvents('project-123', 100));
  *
- *   // Reactive query (re-runs when projectId or limit changes):
+ *   // Reactive query - re-runs when projectId or limit changes
  *   const events = useQuery(() => recentEvents(projectId, limit));
  * </script>
  *
@@ -128,10 +121,21 @@ type QueryInput<TTable extends keyof Schema["tables"] & string, TReturn> =
  * {/each}
  * ```
  */
-export function useQuery<
-  TTable extends keyof Schema["tables"] & string,
-  TReturn,
->(queryInput: QueryInput<TTable, TReturn>): QueryResult<TReturn> {
+/** Table names in the schema */
+type TableName = keyof Schema["tables"] & string;
+
+// Overload: direct query (infers types from query)
+export function useQuery<TTable extends TableName, TReturn>(
+  query: Query<Schema, TTable, TReturn>,
+): QueryResult<TReturn>;
+// Overload: getter function for reactive params (infers types from query)
+export function useQuery<TTable extends TableName, TReturn>(
+  queryGetter: () => Query<Schema, TTable, TReturn>,
+): QueryResult<TReturn>;
+// Implementation
+export function useQuery<TTable extends TableName, TReturn>(
+  queryInput: Query<Schema, TTable, TReturn> | (() => Query<Schema, TTable, TReturn>),
+): QueryResult<TReturn> {
   const zero = getZero();
 
   let data = $state<TReturn[]>([]);
@@ -193,6 +197,7 @@ export interface QueryOneResult<T> {
 /**
  * Create a reactive query that returns a single item.
  * Similar to useQuery but expects .one() query results.
+ * Types are inferred automatically from the query.
  *
  * @example
  * ```svelte
@@ -200,10 +205,10 @@ export interface QueryOneResult<T> {
  *   import { useQueryOne } from '$lib/zero/client.svelte';
  *   import { projectById } from '$lib/zero/queries';
  *
- *   // Static query:
+ *   // Static query - types inferred automatically
  *   const project = useQueryOne(projectById('project-123'));
  *
- *   // Reactive query (re-runs when projectId changes):
+ *   // Reactive query - re-runs when projectId changes
  *   const project = useQueryOne(() => projectById(projectId));
  * </script>
  *
@@ -212,10 +217,18 @@ export interface QueryOneResult<T> {
  * {/if}
  * ```
  */
-export function useQueryOne<
-  TTable extends keyof Schema["tables"] & string,
-  TReturn,
->(queryInput: QueryInput<TTable, TReturn>): QueryOneResult<TReturn> {
+// Overload: direct query (infers types from query)
+export function useQueryOne<TTable extends TableName, TReturn>(
+  query: Query<Schema, TTable, TReturn>,
+): QueryOneResult<TReturn>;
+// Overload: getter function for reactive params (infers types from query)
+export function useQueryOne<TTable extends TableName, TReturn>(
+  queryGetter: () => Query<Schema, TTable, TReturn>,
+): QueryOneResult<TReturn>;
+// Implementation
+export function useQueryOne<TTable extends TableName, TReturn>(
+  queryInput: Query<Schema, TTable, TReturn> | (() => Query<Schema, TTable, TReturn>),
+): QueryOneResult<TReturn> {
   const zero = getZero();
 
   let data = $state<TReturn | undefined>(undefined);

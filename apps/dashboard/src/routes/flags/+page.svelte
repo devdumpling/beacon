@@ -1,11 +1,10 @@
 <script lang="ts">
   import { useQuery } from "$lib/zero/client.svelte";
   import { firstProject } from "$lib/zero/queries";
-  import type { Project } from "$lib/zero/schema";
   import FlagsList from "$lib/components/FlagsList.svelte";
 
-  // Get the first project using synced query
-  const projectQuery = useQuery<Project>(firstProject());
+  // Get the first project using synced query (types inferred automatically)
+  const projectQuery = useQuery(firstProject());
 
   // Derive project ID reactively
   const projectId = $derived(projectQuery.data?.[0]?.id);

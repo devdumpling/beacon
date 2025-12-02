@@ -6,7 +6,6 @@
     enabledFlags,
     recentEvents,
   } from "$lib/zero/queries";
-  import type { Event, Session, Flag } from "$lib/zero/schema";
   import EventsOverTimeChart from "./charts/EventsOverTimeChart.svelte";
   import SessionsTrendChart from "./charts/SessionsTrendChart.svelte";
   import TopEventsChart from "./charts/TopEventsChart.svelte";
@@ -18,10 +17,11 @@
   let days = $state(7);
 
   // Reactive synced queries - use getter functions so queries re-run when params change
-  const eventsQuery = useQuery<Event>(() => eventsInWindow(projectId, days));
-  const sessionsQuery = useQuery<Session>(() => sessionsInWindow(projectId, days));
-  const flagsQuery = useQuery<Flag>(() => enabledFlags(projectId));
-  const recentQuery = useQuery<Event>(() => recentEvents(projectId, 10));
+  // Types are inferred automatically from the queries
+  const eventsQuery = useQuery(() => eventsInWindow(projectId, days));
+  const sessionsQuery = useQuery(() => sessionsInWindow(projectId, days));
+  const flagsQuery = useQuery(() => enabledFlags(projectId));
+  const recentQuery = useQuery(() => recentEvents(projectId, 10));
 
   // Computed values
   const loading = $derived(

@@ -1,14 +1,14 @@
 <script lang="ts">
   import { useQuery } from "$lib/zero/client.svelte";
   import { recentEvents } from "$lib/zero/queries";
-  import type { Event } from "$lib/zero/schema";
   import { formatTimestamp, formatProperties } from "$lib/utils/formatters";
 
   let { projectId }: { projectId: string } = $props();
 
   // Fetch a larger set and paginate client-side
   // Use getter function so query re-runs if projectId changes
-  const eventsQuery = useQuery<Event>(() => recentEvents(projectId, 500));
+  // Types are inferred automatically from the query
+  const eventsQuery = useQuery(() => recentEvents(projectId, 500));
 
   // Client-side pagination
   let displayLimit = $state(100);

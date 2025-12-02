@@ -1,14 +1,14 @@
 <script lang="ts">
   import { useQuery, getZero } from "$lib/zero/client.svelte";
   import { flagsForProject } from "$lib/zero/queries";
-  import type { Flag } from "$lib/zero/schema";
   import { formatTimestamp } from "$lib/utils/formatters";
 
   let { projectId }: { projectId: string } = $props();
 
   const zero = getZero();
   // Use getter function so query re-runs if projectId changes
-  const flagsQuery = useQuery<Flag>(() => flagsForProject(projectId));
+  // Types inferred automatically from the query
+  const flagsQuery = useQuery(() => flagsForProject(projectId));
 
   // Form state
   let newFlagKey = $state("");
@@ -98,11 +98,12 @@
             <td class="p-4">
               <button
                 onclick={() => toggleFlag(flag.id, flag.enabled)}
+                aria-label={flag.enabled ? `Disable ${flag.name}` : `Enable ${flag.name}`}
                 class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors {flag.enabled ? 'bg-rp-pine' : 'bg-rp-overlay'}"
               >
                 <span
                   class="inline-block h-4 w-4 transform rounded-full bg-rp-text transition-transform {flag.enabled ? 'translate-x-6' : 'translate-x-1'}"
-                />
+                ></span>
               </button>
             </td>
             <td class="p-4 text-rp-subtle text-sm">

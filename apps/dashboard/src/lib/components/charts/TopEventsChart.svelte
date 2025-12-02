@@ -1,9 +1,10 @@
 <script lang="ts">
-  import { Chart, Svg, Axis, Bars, Tooltip, Highlight } from "layerchart";
+  import { Chart, Svg, Axis, Bars, Highlight } from "layerchart";
   import { scaleBand, scaleLinear } from "d3-scale";
-  import type { Event } from "$lib/zero/schema";
 
-  let { events = [], limit = 5 }: { events?: Event[]; limit?: number } = $props();
+  // Accept any event-like object with event_name field
+  type EventLike = { event_name?: string };
+  let { events = [], limit = 5 }: { events?: EventLike[]; limit?: number } = $props();
 
   // Count events by name and get top N
   const data = $derived.by(() => {
@@ -46,14 +47,6 @@
         />
         <Highlight area />
       </Svg>
-      <Tooltip.Root let:data>
-        {#if data}
-          <Tooltip.Header>{data.name}</Tooltip.Header>
-          <Tooltip.List>
-            <Tooltip.Item label="Count" value={data.count} />
-          </Tooltip.List>
-        {/if}
-      </Tooltip.Root>
     </Chart>
   {:else}
     <div class="h-full flex items-center justify-center text-rp-muted">

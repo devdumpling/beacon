@@ -1,10 +1,11 @@
 <script lang="ts">
-  import { Chart, Svg, Axis, Spline, Tooltip, Highlight } from "layerchart";
+  import { Chart, Svg, Axis, Spline, Highlight } from "layerchart";
   import { scaleTime, scaleLinear } from "d3-scale";
   import { curveMonotoneX } from "d3-shape";
-  import type { Session } from "$lib/zero/schema";
 
-  let { sessions = [], days = 7 }: { sessions?: Session[]; days?: number } = $props();
+  // Accept any session-like object with started_at field
+  type SessionLike = { started_at?: number };
+  let { sessions = [], days = 7 }: { sessions?: SessionLike[]; days?: number } = $props();
 
   // Aggregate sessions by day
   const data = $derived.by(() => {
@@ -75,16 +76,6 @@
         <Spline class="stroke-2 stroke-rp-foam" curve={curveMonotoneX} />
         <Highlight points={{ class: "fill-rp-foam" }} lines />
       </Svg>
-      <Tooltip.Root let:data>
-        {#if data}
-          <Tooltip.Header>
-            {data.date.toLocaleDateString()}
-          </Tooltip.Header>
-          <Tooltip.List>
-            <Tooltip.Item label="Sessions" value={data.count} />
-          </Tooltip.List>
-        {/if}
-      </Tooltip.Root>
     </Chart>
   {:else}
     <div class="h-full flex items-center justify-center text-rp-muted">
