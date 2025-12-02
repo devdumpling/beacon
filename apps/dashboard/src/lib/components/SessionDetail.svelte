@@ -1,14 +1,14 @@
 <script lang="ts">
   import { useQuery, useQueryOne } from "$lib/zero/client.svelte";
   import { sessionById, eventsForSession } from "$lib/zero/queries";
-  import type { Session, Event } from "$lib/zero/schema";
   import { formatTimestamp, formatProperties } from "$lib/utils/formatters";
 
   let { sessionId }: { sessionId: string } = $props();
 
   // Use getter functions so queries re-run if sessionId changes
-  const sessionQuery = useQueryOne<Session>(() => sessionById(sessionId));
-  const eventsQuery = useQuery<Event>(() => eventsForSession(sessionId));
+  // Types are inferred automatically from the queries
+  const sessionQuery = useQueryOne(() => sessionById(sessionId));
+  const eventsQuery = useQuery(() => eventsForSession(sessionId));
 
   const loading = $derived(sessionQuery.loading || eventsQuery.loading);
   const session = $derived(sessionQuery.data);

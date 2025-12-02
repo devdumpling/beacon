@@ -1,13 +1,13 @@
 <script lang="ts">
   import { useQuery } from "$lib/zero/client.svelte";
   import { recentSessions } from "$lib/zero/queries";
-  import type { Session } from "$lib/zero/schema";
   import { formatTimestamp, formatRelativeTime } from "$lib/utils/formatters";
 
   let { projectId }: { projectId: string } = $props();
 
   // Use getter function so query re-runs if projectId changes
-  const sessionsQuery = useQuery<Session>(() => recentSessions(projectId, 100));
+  // Types inferred automatically from the query
+  const sessionsQuery = useQuery(() => recentSessions(projectId, 100));
 </script>
 
 <div class="bg-rp-surface rounded-lg border border-rp-overlay">

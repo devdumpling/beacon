@@ -11,11 +11,10 @@ export function formatTimestamp(ts: number): string {
 
 /**
  * Format a properties object as pretty-printed JSON.
+ * Accepts Zero's ReadonlyJSONValue type (string, number, boolean, null, array, or object).
  */
-export function formatProperties(
-  props: Record<string, unknown> | null | undefined,
-): string {
-  if (!props) return "{}";
+export function formatProperties(props: unknown): string {
+  if (props === null || props === undefined) return "{}";
   try {
     return JSON.stringify(props, null, 2);
   } catch {

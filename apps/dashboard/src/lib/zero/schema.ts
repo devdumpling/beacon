@@ -47,7 +47,7 @@ const events = table("events")
     anon_id: string(),
     user_id: string().optional(),
     event_name: string(),
-    properties: json<Record<string, unknown>>().optional(),
+    properties: json().optional(),
     timestamp: number(), // TIMESTAMPTZ -> number (ms since epoch)
     received_at: number(), // TIMESTAMPTZ -> number (part of composite PK)
   })
@@ -94,7 +94,7 @@ const users = table("users")
     project_id: string(),
     anon_id: string(),
     user_id: string().optional(),
-    traits: json<Record<string, unknown>>().optional(),
+    traits: json().optional(),
     first_seen_at: number(), // TIMESTAMPTZ -> number (ms since epoch)
     last_seen_at: number(), // TIMESTAMPTZ -> number
   })
@@ -140,11 +140,60 @@ export const permissions = definePermissions<Record<string, never>, Schema>(
 );
 
 // ============================================
-// TABLE TYPES
+// TABLE TYPES (manually defined)
 // ============================================
 
-export type Project = typeof projects.inferSelect;
-export type Event = typeof events.inferSelect;
-export type Session = typeof sessions.inferSelect;
-export type Flag = typeof flags.inferSelect;
-export type User = typeof users.inferSelect;
+/**
+ * Row types for each table.
+ * Manually defined since Zero's table builder doesn't have inferSelect.
+ */
+export interface Project {
+  id: string;
+  name: string;
+  api_key: string;
+  created_at: number;
+}
+
+export interface Event {
+  id: string;
+  project_id: string;
+  session_id: string;
+  anon_id: string;
+  user_id: string | null;
+  event_name: string;
+  properties: Record<string, unknown> | null;
+  timestamp: number;
+  received_at: number;
+}
+
+export interface Session {
+  id: string;
+  project_id: string;
+  anon_id: string;
+  user_id: string | null;
+  started_at: number;
+  last_event_at: number;
+  event_count: number | null;
+  entry_url: string | null;
+  last_url: string | null;
+}
+
+export interface Flag {
+  id: string;
+  project_id: string;
+  key: string;
+  name: string;
+  enabled: boolean;
+  created_at: number;
+  updated_at: number;
+}
+
+export interface User {
+  id: string;
+  project_id: string;
+  anon_id: string;
+  user_id: string | null;
+  traits: Record<string, unknown> | null;
+  first_seen_at: number;
+  last_seen_at: number;
+}

@@ -55,8 +55,8 @@ export const projectById = syncedQuery(
  */
 export const recentEvents = syncedQuery(
   "recentEvents",
-  z.tuple([z.string(), z.number().optional()]),
-  (projectId, limit = 100) =>
+  z.tuple([z.string(), z.number().default(100)]),
+  (projectId, limit) =>
     builder.events
       .where("project_id", projectId)
       .orderBy("timestamp", "desc")
@@ -68,8 +68,8 @@ export const recentEvents = syncedQuery(
  */
 export const eventsInWindow = syncedQuery(
   "eventsInWindow",
-  z.tuple([z.string(), z.number().optional()]),
-  (projectId, days = 7) => {
+  z.tuple([z.string(), z.number().default(7)]),
+  (projectId, days) => {
     const sinceMs = Date.now() - days * 24 * 60 * 60 * 1000;
     return builder.events
       .where("project_id", projectId)
@@ -86,8 +86,8 @@ export const eventsInWindow = syncedQuery(
  */
 export const recentSessions = syncedQuery(
   "recentSessions",
-  z.tuple([z.string(), z.number().optional()]),
-  (projectId, limit = 50) =>
+  z.tuple([z.string(), z.number().default(50)]),
+  (projectId, limit) =>
     builder.sessions
       .where("project_id", projectId)
       .orderBy("started_at", "desc")
@@ -99,8 +99,8 @@ export const recentSessions = syncedQuery(
  */
 export const sessionsInWindow = syncedQuery(
   "sessionsInWindow",
-  z.tuple([z.string(), z.number().optional()]),
-  (projectId, days = 7) => {
+  z.tuple([z.string(), z.number().default(7)]),
+  (projectId, days) => {
     const sinceMs = Date.now() - days * 24 * 60 * 60 * 1000;
     return builder.sessions
       .where("project_id", projectId)
@@ -163,23 +163,16 @@ export const enabledFlags = syncedQuery(
  */
 export const usersForProject = syncedQuery(
   "usersForProject",
-  z.tuple([z.string(), z.number().optional()]),
-  (projectId, limit = 50) =>
+  z.tuple([z.string(), z.number().default(50)]),
+  (projectId, limit) =>
     builder.users
       .where("project_id", projectId)
       .orderBy("last_seen_at", "desc")
       .limit(limit),
 );
 
-/**
- * Get identified users (those with user_id set)
- */
-export const identifiedUsers = syncedQuery(
-  "identifiedUsers",
-  z.tuple([z.string()]),
-  (projectId) =>
-    builder.users.where("project_id", projectId).where("user_id", "!=", null),
-);
+// Note: identifiedUsers query removed - Zero doesn't support null comparisons in .where()
+// TODO: Re-add when Zero supports IS NOT NULL or use client-side filtering
 
 // ============================================
 // EXPORT ALL QUERIES
@@ -201,5 +194,4 @@ export const queries = [
   flagsForProject,
   enabledFlags,
   usersForProject,
-  identifiedUsers,
 ] as const;
